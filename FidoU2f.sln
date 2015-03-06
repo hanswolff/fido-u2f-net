@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22609.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FidoU2f", "FidoU2f\FidoU2f.csproj", "{262C339D-4ED3-4C7C-9D66-E87F5ABEAA48}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FidoU2f.Tests", "FidoU2f.Tests\FidoU2f.Tests.csproj", "{85D8D10A-B490-4E0C-BE5C-473834F24A2C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{262C339D-4ED3-4C7C-9D66-E87F5ABEAA48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{262C339D-4ED3-4C7C-9D66-E87F5ABEAA48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{262C339D-4ED3-4C7C-9D66-E87F5ABEAA48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{262C339D-4ED3-4C7C-9D66-E87F5ABEAA48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85D8D10A-B490-4E0C-BE5C-473834F24A2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85D8D10A-B490-4E0C-BE5C-473834F24A2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85D8D10A-B490-4E0C-BE5C-473834F24A2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85D8D10A-B490-4E0C-BE5C-473834F24A2C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
