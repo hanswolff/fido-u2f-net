@@ -22,7 +22,6 @@
 // SOFTWARE.
 
 using System;
-using System.Text;
 using FidoU2f.Models;
 using NUnit.Framework;
 
@@ -42,7 +41,7 @@ namespace FidoU2f.Tests.Models
 		public void Validate_RegistrationDataMissing_Throws()
 		{
 			var registerResponse = CreateGoodRegisterResponse();
-			registerResponse.RegistrationData = "";
+			registerResponse.RegistrationDataAsBase64 = "";
 
 			Assert.Throws<InvalidOperationException>(() => registerResponse.Validate());
 		}
@@ -78,10 +77,10 @@ namespace FidoU2f.Tests.Models
 		{
 			return new FidoRegisterResponse
 			{
-				RegistrationData = "registration data",
+				RegistrationDataAsBase64 = "registration data",
 				ClientData = new FidoClientData
 				{
-					Challenge = WebSafeBase64Converter.ToBase64String(Encoding.Default.GetBytes("random challenge")),
+					Challenge = TestVectors.ServerChallengeRegisterBase64,
 					Origin = "http://localhost",
 					Type = "type"
 				}

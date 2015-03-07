@@ -48,7 +48,9 @@
     <Compile Include="Models\FidoFacetId.cs" />
     <Compile Include="Models\FidoDeviceRegistration.cs" />
     <Compile Include="Models\FidoClientData.cs" />
+    <Compile Include="Models\FidoSignature.cs" />
     <Compile Include="Models\FidoRegisterResponse.cs" />
+    <Compile Include="Models\FidoRegistrationData.cs" />
     <Compile Include="Models\FidoStartedRegistration.cs" />
     <Compile Include="UniversalTwoFactor.cs" />
     <Compile Include="WebSafeBase64Converter.cs" />

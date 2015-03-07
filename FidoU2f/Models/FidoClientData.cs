@@ -23,6 +23,7 @@
 
 using System;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace FidoU2f.Models
 {
@@ -37,9 +38,32 @@ namespace FidoU2f.Models
 		[JsonProperty("origin")]
 		public string Origin { get; set; }
 
+		[JsonIgnore]
+		public string RawJsonValue { get; private set; }
+
 		public static FidoClientData FromJson(string json)
 		{
-			return JsonConvert.DeserializeObject<FidoClientData>(json);
+			var element = JObject.Parse(json);
+			if (element == null)
+				throw new InvalidOperationException("Client data must be in JSON format");
+
+			JToken type, challenge, orgin;
+			if (!element.TryGetValue("typ", out type))
+				throw new InvalidOperationException("Client data is missing 'typ' param");
+			if (!element.TryGetValue("challenge", out challenge))
+				throw new InvalidOperationException("Client data is missing 'challenge' param");
+
+			var clientData = new FidoClientData
+			{
+				RawJsonValue = json,
+				Type = type.ToString(),
+				Challenge = challenge.ToString()
+			};
+
+			if (element.TryGetValue("origin", out orgin))
+				clientData.Origin = orgin.ToString();
+
+			return clientData;
 		}
 
 		public void Validate()
@@ -53,6 +77,5 @@ namespace FidoU2f.Models
 			if (String.IsNullOrEmpty(Origin))
 				throw new InvalidOperationException("Origin is missing in client data");
 		}
-
 	}
 }

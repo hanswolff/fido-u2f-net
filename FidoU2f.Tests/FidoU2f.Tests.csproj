@@ -60,7 +60,9 @@
     <Compile Include="Models\TestFidoAppId.cs" />
     <Compile Include="Models\TestFidoClientData.cs" />
     <Compile Include="Models\TestFidoRegisterResponse.cs" />
+    <Compile Include="Models\TestFidoRegistrationData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestVectors.cs" />
     <Compile Include="TestUniversalTwoFactor.cs" />
     <Compile Include="TestWebSafeBase64Converter.cs" />
   </ItemGroup>

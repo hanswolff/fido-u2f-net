@@ -29,13 +29,13 @@ namespace FidoU2f.Models
 	public class FidoAttestationCertificate
 	{
 		public byte[] RawData { get; private set; }
-		public X509Certificate Cerificate { get; private set; }
+		public X509Certificate Certificate { get; private set; }
 
 		public FidoAttestationCertificate(byte[] attestationCertificateBytes)
 		{
 			if (attestationCertificateBytes == null) throw new ArgumentNullException("attestationCertificateBytes");
 
-			Cerificate = new X509CertificateParser().ReadCertificate(attestationCertificateBytes);
+			Certificate = new X509CertificateParser().ReadCertificate(attestationCertificateBytes);
 			RawData = attestationCertificateBytes;
 		}
 

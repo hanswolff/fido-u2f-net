@@ -25,6 +25,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FidoU2f.Models;
+using Org.BouncyCastle.Crypto.Digests;
+using Org.BouncyCastle.Security;
 
 namespace FidoU2f
 {
@@ -88,9 +90,73 @@ namespace FidoU2f
             if (!trustedFacetIds.Any(x => x.ToString().Equals(origin)))
 				throw new InvalidOperationException(String.Format("{0} is not a recognized trusted origin for this backend", origin));
 
-			// TODO: create device registration
+			var registrationData = registerResponse.GetParsedRegistrationData();
+			VerifyResponseSignature(startedRegistration.AppId, registrationData, registerResponse.ClientData);
 
-			throw new NotImplementedException();
+			return new FidoDeviceRegistration(registrationData.KeyHandle, registrationData.UserPublicKey,
+				registrationData.AttestationCertificate, 0);
+		}
+
+		private void VerifyResponseSignature(FidoAppId appId, FidoRegistrationData registrationData, FidoClientData clientData)
+		{
+			if (appId == null) throw new ArgumentNullException("appId");
+			if (registrationData == null) throw new ArgumentNullException("registrationData");
+			if (clientData == null) throw new ArgumentNullException("clientData");
+
+			if (String.IsNullOrEmpty(clientData.RawJsonValue))
+				throw new InvalidOperationException("Client data has no JSON representation");
+
+			var signedBytes = GetSignedBytes(
+				Sha256(appId.ToString()),
+				Sha256(clientData.RawJsonValue),
+				registrationData.KeyHandle,
+				registrationData.UserPublicKey);
+
+			VerifySignature(registrationData.AttestationCertificate, registrationData.Signature, signedBytes);
+		}
+
+		private void VerifySignature(FidoAttestationCertificate certificate, FidoSignature signature, 
+			byte[] signedBytes)
+		{
+			try
+			{
+				var certPublicKey = certificate.Certificate.GetPublicKey();
+				var signer = SignerUtilities.GetSigner("SHA-256withECDSA");
+				signer.Init(false, certPublicKey);
+				signer.BlockUpdate(signedBytes, 0, signedBytes.Length);
+
+				if (signer.VerifySignature(signature.ToByteArray()))
+					throw new InvalidOperationException("Invalid signature");
+			}
+			catch (Exception)
+			{
+				throw new InvalidOperationException("Invalid signature");
+			}
+		}
+
+		private byte[] Sha256(string text)
+		{
+			var bytes = new byte[text.Length * sizeof(char)];
+			Buffer.BlockCopy(text.ToCharArray(), 0, bytes, 0, bytes.Length);
+
+			var sha256 = new Sha256Digest();
+			var hash = new byte[sha256.GetDigestSize()];
+			sha256.BlockUpdate(bytes, 0, bytes.Length);
+			sha256.DoFinal(hash, 0);
+			return hash;
+		}
+
+		private static byte[] GetSignedBytes(byte[] appIdHash, byte[] clientDataHash, 
+			FidoKeyHandle keyHandle, FidoPublicKey userPublicKey)
+		{
+			var bytes = new List<byte> {0};
+
+			bytes.AddRange(appIdHash);
+			bytes.AddRange(clientDataHash);
+			bytes.AddRange(keyHandle.ToByteArray());
+			bytes.AddRange(userPublicKey.ToByteArray());
+
+			return bytes.ToArray();
 		}
 	}
 }

@@ -25,26 +25,26 @@ using System;
 
 namespace FidoU2f.Models
 {
-	public class FidoPublicKey
+	public class FidoSignature
 	{
 		private readonly byte[] _bytes;
 
-		public FidoPublicKey()
+		public FidoSignature()
 		{
 		}
 
-		public FidoPublicKey(byte[] publicKeyBytes)
+		public FidoSignature(byte[] signatureBytes)
 		{
-			if (publicKeyBytes == null) throw new ArgumentNullException("publicKeyBytes");
+			if (signatureBytes == null) throw new ArgumentNullException("signatureBytes");
 
-			_bytes = publicKeyBytes;
+			_bytes = signatureBytes;
 		}
 
-		public static FidoPublicKey FromWebSafeBase64(string publicKey)
+		public static FidoSignature FromWebSafeBase64(string signature)
 		{
-			if (publicKey == null) throw new ArgumentNullException("publicKey");
+			if (signature == null) throw new ArgumentNullException("signature");
 
-			return new FidoPublicKey(WebSafeBase64Converter.FromBase64String(publicKey));
+			return new FidoSignature(WebSafeBase64Converter.FromBase64String(signature));
 		}
 
 		public byte[] ToByteArray()

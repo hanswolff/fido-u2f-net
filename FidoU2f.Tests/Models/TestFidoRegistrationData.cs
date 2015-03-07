@@ -21,40 +21,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
+using FidoU2f.Models;
+using NUnit.Framework;
 
-namespace FidoU2f.Models
+namespace FidoU2f.Tests.Models
 {
-	public class FidoPublicKey
+	[TestFixture]
+	public class TestFidoRegistrationData
 	{
-		private readonly byte[] _bytes;
-
-		public FidoPublicKey()
+		[Test]
+		public void FromString()
 		{
-		}
+			var registrationData = FidoRegistrationData.FromString(TestVectors.RegistrationResponseDataBase64);
 
-		public FidoPublicKey(byte[] publicKeyBytes)
-		{
-			if (publicKeyBytes == null) throw new ArgumentNullException("publicKeyBytes");
-
-			_bytes = publicKeyBytes;
-		}
-
-		public static FidoPublicKey FromWebSafeBase64(string publicKey)
-		{
-			if (publicKey == null) throw new ArgumentNullException("publicKey");
-
-			return new FidoPublicKey(WebSafeBase64Converter.FromBase64String(publicKey));
-		}
-
-		public byte[] ToByteArray()
-		{
-			return _bytes;
-		}
-
-		public override string ToString()
-		{
-			return WebSafeBase64Converter.ToBase64String(_bytes);
+			Assert.IsNotNull(registrationData.AttestationCertificate);
+			Assert.IsNotNullOrEmpty(registrationData.KeyHandle.ToString());
+			Assert.IsNotNullOrEmpty(registrationData.Signature.ToString());
+			Assert.IsNotNullOrEmpty(registrationData.UserPublicKey.ToString());
 		}
 	}
 }

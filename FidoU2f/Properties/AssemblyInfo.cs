@@ -22,6 +22,7 @@
 // SOFTWARE.
 
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -29,3 +30,5 @@ using System.Reflection;
 [assembly: AssemblyTitle("FidoU2f")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
+
+[assembly: InternalsVisibleTo("FidoU2f.Tests")]

@@ -32,7 +32,7 @@ namespace FidoU2f.Tests
 	[TestFixture]
 	public class TestUniversalTwoFactor
 	{
-		private static readonly FidoAppId TestAppId = new FidoAppId("http://localhost");
+		private static readonly FidoAppId TestAppId = new FidoAppId(TestVectors.AppIdEnroll);
 
 		[Test]
 		public void StartRegistration()
@@ -56,23 +56,23 @@ namespace FidoU2f.Tests
 		{
 			var fido = new UniversalTwoFactor();
 			var startedRegistration = fido.StartRegistration(TestAppId);
+			startedRegistration.Challenge = TestVectors.ServerChallengeRegisterBase64;
 
-			var registerResponse = new FidoRegisterResponse
-			{
-				RegistrationData = GetValidRegistrationData(),
-				ClientData = new FidoClientData
-				{
-					Challenge = startedRegistration.Challenge,
-					Origin = "http://localhost",
-					Type = UniversalTwoFactor.RegisterType
-				}
-			};
+			var registerResponse = GetValidRegisterResponse();
 
-			var trustedFacets = new[] { new FidoFacetId("http://localhost") };
-
-			var deviceRegistration = fido.FinishRegistration(startedRegistration, registerResponse, trustedFacets);
+			var deviceRegistration = fido.FinishRegistration(startedRegistration, registerResponse, TestVectors.TrustedDomains);
 			// TODO: this is not working yet
 			Assert.IsNotNull(deviceRegistration);
+		}
+
+		private static FidoRegisterResponse GetValidRegisterResponse()
+		{
+			var registerResponse = new FidoRegisterResponse
+			{
+				RegistrationDataAsBase64 = TestVectors.RegistrationResponseDataBase64,
+				ClientData = FidoClientData.FromJson(TestVectors.ClientDataRegister)
+			};
+			return registerResponse;
 		}
 
 		[Test]
@@ -81,16 +81,8 @@ namespace FidoU2f.Tests
 			var fido = new UniversalTwoFactor();
 			var startedRegistration = fido.StartRegistration(TestAppId);
 
-			var registerResponse = new FidoRegisterResponse
-			{
-				RegistrationData = GetValidRegistrationData(),
-				ClientData = new FidoClientData
-				{
-					Challenge = startedRegistration.Challenge,
-					Origin = "http://localhost",
-					Type = "incorrect type"
-				}
-			};
+			var registerResponse = GetValidRegisterResponse();
+			registerResponse.ClientData.Type = "incorrect type";
 
 			var trustedFacets = new[] {new FidoFacetId("http://localhost")};
 
@@ -103,16 +95,9 @@ namespace FidoU2f.Tests
 			var fido = new UniversalTwoFactor();
 			var startedRegistration = fido.StartRegistration(TestAppId);
 
-			var registerResponse = new FidoRegisterResponse
-			{
-				RegistrationData = GetValidRegistrationData(),
-				ClientData = new FidoClientData
-				{
-					Challenge = WebSafeBase64Converter.ToBase64String(Encoding.Default.GetBytes("incorrect challenge")),
-					Origin = "http://localhost",
-					Type = UniversalTwoFactor.RegisterType
-				}
-			};
+			var registerResponse = GetValidRegisterResponse();
+			registerResponse.ClientData.Challenge =
+				WebSafeBase64Converter.ToBase64String(Encoding.Default.GetBytes("incorrect challenge"));
 
 			var trustedFacets = new[] { new FidoFacetId("http://localhost") };
 
@@ -125,25 +110,12 @@ namespace FidoU2f.Tests
 			var fido = new UniversalTwoFactor();
 			var startedRegistration = fido.StartRegistration(TestAppId);
 
-			var registerResponse = new FidoRegisterResponse
-			{
-				RegistrationData = GetValidRegistrationData(),
-				ClientData = new FidoClientData
-				{
-					Challenge = startedRegistration.Challenge,
-					Origin = "http://not.trusted",
-					Type = UniversalTwoFactor.RegisterType
-				}
-			};
+			var registerResponse = GetValidRegisterResponse();
+			registerResponse.ClientData.Origin = "http://not.trusted";
 
 			var trustedFacets = new[] { new FidoFacetId("http://localhost") };
 
 			Assert.Throws<InvalidOperationException>(() => fido.FinishRegistration(startedRegistration, registerResponse, trustedFacets));
-		}
-
-		private string GetValidRegistrationData()
-		{
-			return "validation data"; // TODO:
 		}
     }
 }
