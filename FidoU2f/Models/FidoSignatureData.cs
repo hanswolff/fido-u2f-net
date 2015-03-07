@@ -22,38 +22,58 @@
 // SOFTWARE.
 
 using System;
+using System.IO;
 
 namespace FidoU2f.Models
 {
-	public class FidoDeviceRegistration
+	public class FidoSignatureData
 	{
-		public FidoKeyHandle KeyHandle { get; private set; }
+		public byte UserPresence { get; }
 
-		public FidoPublicKey PublicKey { get; private set; }
+		public uint Counter { get; }
 
-		public FidoAttestationCertificate Certificate { get; private set; }
+		public FidoSignature Signature { get; private set; }
 
-		public uint Counter { get; private set; }
-
-		public FidoDeviceRegistration(FidoKeyHandle keyHandle, FidoPublicKey publicKey, FidoAttestationCertificate certificate, uint counter)
+		private FidoSignatureData(byte userPresence, uint counter, FidoSignature signature)
 		{
-			if (keyHandle == null) throw new ArgumentNullException("keyHandle");
-			if (publicKey == null) throw new ArgumentNullException("publicKey");
-			if (certificate == null) throw new ArgumentNullException("certificate");
-
-			KeyHandle = keyHandle;
-			PublicKey = publicKey;
-			Certificate = certificate;
+			UserPresence = userPresence;
 			Counter = counter;
+			Signature = signature;
 		}
 
-		public void UpdateCounter(uint clientCounter)
+		public static FidoSignatureData FromString(string webSafeBase64)
 		{
-			if (clientCounter <= Counter)
+			return FromBytes(WebSafeBase64Converter.FromBase64String(webSafeBase64));
+		}
+
+		public static FidoSignatureData FromBytes(byte[] rawRegistrationData)
+		{
+			using (var mem = new MemoryStream(rawRegistrationData))
 			{
-				throw new InvalidOperationException("Counter value too small!");
+				return FromStream(mem);
 			}
-			Counter = clientCounter;
+		}
+
+		private static FidoSignatureData FromStream(Stream stream)
+		{
+			using (var binaryReader = new BinaryReader(stream))
+			{
+				var userPresence = binaryReader.ReadByte();
+				var counterBytes = binaryReader.ReadBytes(4);
+
+				if (BitConverter.IsLittleEndian)
+					Array.Reverse(counterBytes);
+
+				var counter = BitConverter.ToUInt32(counterBytes, 0);
+
+				var size = binaryReader.BaseStream.Length - binaryReader.BaseStream.Position;
+				var signatureBytes = binaryReader.ReadBytes((int)size);
+
+				return new FidoSignatureData(
+					userPresence,
+					counter,
+					new FidoSignature(signatureBytes));
+			}
 		}
 	}
 }

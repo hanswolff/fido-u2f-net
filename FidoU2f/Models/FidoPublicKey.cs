@@ -22,6 +22,9 @@
 // SOFTWARE.
 
 using System;
+using Org.BouncyCastle.Asn1.Sec;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Parameters;
 
 namespace FidoU2f.Models
 {
@@ -34,6 +37,18 @@ namespace FidoU2f.Models
 			if (publicKeyBytes == null) throw new ArgumentNullException("publicKeyBytes");
 
 			_bytes = publicKeyBytes;
+		}
+
+		public ICipherParameters PublicKey
+		{
+			get
+			{
+				var curve = SecNamedCurves.GetByOid(SecObjectIdentifiers.SecP256r1);
+				var point = curve.Curve.DecodePoint(_bytes);
+				var ecP = new ECDomainParameters(curve.Curve, curve.G, curve.N, curve.H);
+
+				return new ECPublicKeyParameters(point, ecP);
+			}
 		}
 
 		public static FidoPublicKey FromWebSafeBase64(string publicKey)

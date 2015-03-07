@@ -37,6 +37,7 @@ namespace FidoU2f
 		public const string AuthenticateType = "navigator.id.getAssertion";
 		public const string RegisterType = "navigator.id.finishEnrollment";
 
+		public static byte UserPresentFlag = 0x01;
 
 		private readonly IGenerateFidoChallenge _generateFidoChallenge;
 
@@ -81,25 +82,36 @@ namespace FidoU2f
 
 			registerResponse.Validate();
 
-			if (registerResponse.ClientData.Type != RegisterType)
-			{
-				var message = String.Format("Unexpected type in client data (expected '{0}' but was '{1}')",
-					RegisterType, registerResponse.ClientData.Type);
-				throw new InvalidOperationException(message);
-			}
+			var clientData = registerResponse.ClientData;
 
-			if (registerResponse.ClientData.Challenge != startedRegistration.Challenge)
+			ExpectClientDataType(clientData, RegisterType);
+
+			if (clientData.Challenge != startedRegistration.Challenge)
 				throw new InvalidOperationException("Incorrect challenge signed in client data");
 
-			var origin = registerResponse.ClientData.Origin;
-            if (!trustedFacetIds.Any(x => x.ToString().Equals(origin)))
-				throw new InvalidOperationException(String.Format("{0} is not a recognized trusted origin for this backend", origin));
+            ValidateOrigin(trustedFacetIds, clientData.Origin);
 
-			var registrationData = registerResponse.GetParsedRegistrationData();
-			VerifyResponseSignature(startedRegistration.AppId, registrationData, registerResponse.ClientData);
+			var registrationData = registerResponse.RegistrationData;
+			VerifyResponseSignature(startedRegistration.AppId, registrationData, clientData);
 
 			return new FidoDeviceRegistration(registrationData.KeyHandle, registrationData.UserPublicKey,
 				registrationData.AttestationCertificate, 0);
+		}
+
+		private static void ValidateOrigin(IEnumerable<FidoFacetId> trustedFacetIds, string origin)
+		{
+			if (!trustedFacetIds.Any(x => x.ToString().Equals(origin)))
+				throw new InvalidOperationException(String.Format("{0} is not a recognized trusted origin for this backend", origin));
+		}
+
+		private static void ExpectClientDataType(FidoClientData clientData, string expectedType)
+		{
+			if (clientData.Type != expectedType)
+			{
+				var message = String.Format("Unexpected type in client data (expected '{0}' but was '{1}')",
+					expectedType, clientData.Type);
+				throw new InvalidOperationException(message);
+			}
 		}
 
 		private void VerifyResponseSignature(FidoAppId appId, FidoRegistrationData registrationData, FidoClientData clientData)
@@ -111,11 +123,12 @@ namespace FidoU2f
 			if (String.IsNullOrEmpty(clientData.RawJsonValue))
 				throw new InvalidOperationException("Client data has no JSON representation");
 
-			var signedBytes = GetSignedBytes(
+			var signedBytes = PackBytes(
+				new byte[] { 0 },
 				Sha256(appId.ToString()),
 				Sha256(clientData.RawJsonValue),
-				registrationData.KeyHandle,
-				registrationData.UserPublicKey);
+				registrationData.KeyHandle.ToByteArray(),
+				registrationData.UserPublicKey.ToByteArray());
 
 			VerifySignature(registrationData.AttestationCertificate, registrationData.Signature, signedBytes);
 		}
@@ -151,17 +164,105 @@ namespace FidoU2f
 			return hash;
 		}
 
-		private static byte[] GetSignedBytes(byte[] appIdHash, byte[] clientDataHash, 
-			FidoKeyHandle keyHandle, FidoPublicKey userPublicKey)
+		private static byte[] PackBytes(params byte[][] bytes)
 		{
-			var bytes = new List<byte> {0};
+			var result = new List<byte>();
 
-			bytes.AddRange(appIdHash);
-			bytes.AddRange(clientDataHash);
-			bytes.AddRange(keyHandle.ToByteArray());
-			bytes.AddRange(userPublicKey.ToByteArray());
+			foreach (var chunk in bytes)
+				result.AddRange(chunk);
 
-			return bytes.ToArray();
+			return result.ToArray();
+		}
+
+		public FidoStartedAuthentication StartAuthentication(FidoAppId appId, FidoDeviceRegistration deviceRegistration)
+		{
+			if (appId == null) throw new ArgumentNullException("appId");
+			if (deviceRegistration == null) throw new ArgumentNullException("deviceRegistration");
+
+			var challenge = _generateFidoChallenge.GenerateChallenge();
+
+			return new FidoStartedAuthentication(appId, 
+				WebSafeBase64Converter.ToBase64String(challenge),
+				deviceRegistration.KeyHandle);
+		}
+
+		public uint FinishAuthentication(FidoStartedAuthentication startedAuthentication,
+			string jsonDeviceResponse,
+			FidoDeviceRegistration deviceRegistration,
+			IEnumerable<FidoFacetId> trustedFacetIds)
+		{
+			var authResponse = FidoAuthenticateResponse.FromJson(jsonDeviceResponse);
+            return FinishAuthentication(startedAuthentication, authResponse, deviceRegistration, trustedFacetIds);
+		}
+
+		public uint FinishAuthentication(FidoStartedAuthentication startedAuthentication,
+			FidoAuthenticateResponse authResponse,
+			FidoDeviceRegistration deviceRegistration,
+			IEnumerable<FidoFacetId> trustedFacetIds)
+		{
+			authResponse.Validate();
+
+			var clientData = authResponse.ClientData;
+
+			ExpectClientDataType(clientData, AuthenticateType);
+
+			if (clientData.Challenge != startedAuthentication.Challenge)
+				throw new InvalidOperationException("Incorrect challenge signed in client data");
+
+			ValidateOrigin(trustedFacetIds, clientData.Origin);
+
+			var signatureData = authResponse.SignatureData;
+
+			VerifyAuthSignature(startedAuthentication.AppId, signatureData, clientData, deviceRegistration);
+
+			deviceRegistration.UpdateCounter(signatureData.Counter);
+			return signatureData.Counter;
+		}
+
+		private void VerifyAuthSignature(FidoAppId appId, FidoSignatureData signatureData, FidoClientData clientData, 
+			FidoDeviceRegistration deviceRegistration)
+		{
+			if (appId == null) throw new ArgumentNullException("appId");
+			if (signatureData == null) throw new ArgumentNullException("signatureData");
+			if (clientData == null) throw new ArgumentNullException("clientData");
+			if (deviceRegistration == null) throw new ArgumentNullException("deviceRegistration");
+
+			if (String.IsNullOrEmpty(clientData.RawJsonValue))
+				throw new InvalidOperationException("Client data has no JSON representation");
+
+			var counterBytes = BitConverter.GetBytes(signatureData.Counter);
+			if (BitConverter.IsLittleEndian)
+				Array.Reverse(counterBytes);
+
+			var signedBytes = PackBytes(
+				Sha256(appId.ToString()),
+				new [] { signatureData.UserPresence },
+				counterBytes,
+				Sha256(clientData.RawJsonValue));
+
+			VerifySignature(deviceRegistration, signatureData.Signature, signedBytes);
+
+			if (signatureData.UserPresence != UserPresentFlag)
+				throw new InvalidOperationException("User presence invalid during authentication");
+		}
+
+		private void VerifySignature(FidoDeviceRegistration deviceRegistration, FidoSignature signature, 
+			byte[] signedBytes)
+		{
+			try
+			{
+				var certPublicKey = deviceRegistration.PublicKey.PublicKey;
+				var signer = SignerUtilities.GetSigner("SHA-256withECDSA");
+				signer.Init(false, certPublicKey);
+				signer.BlockUpdate(signedBytes, 0, signedBytes.Length);
+
+				if (signer.VerifySignature(signature.ToByteArray()))
+					throw new InvalidOperationException("Invalid signature");
+			}
+			catch (Exception)
+			{
+				throw new InvalidOperationException("Invalid signature");
+			}
 		}
 	}
 }

@@ -57,7 +57,7 @@ namespace FidoU2f.Tests
 			startedRegistration.Challenge = TestVectors.ServerChallengeRegisterBase64;
 
 			var registerResponse = GetValidRegisterResponse();
-			var registrationData = registerResponse.GetParsedRegistrationData();
+			var registrationData = registerResponse.RegistrationData;
 
 			var deviceRegistration = fido.FinishRegistration(startedRegistration, registerResponse.ToJson(), TestVectors.TrustedDomains);
 			Assert.IsNotNull(deviceRegistration);
@@ -73,7 +73,7 @@ namespace FidoU2f.Tests
 			startedRegistration.Challenge = TestVectors.ServerChallengeRegisterBase64;
 
 			var registerResponse = GetValidRegisterResponse();
-			var registrationData = registerResponse.GetParsedRegistrationData();
+			var registrationData = registerResponse.RegistrationData;
 
 			var deviceRegistration = fido.FinishRegistration(startedRegistration, registerResponse, TestVectors.TrustedDomains);
 			Assert.IsNotNull(deviceRegistration);
@@ -85,7 +85,7 @@ namespace FidoU2f.Tests
 		{
 			var registerResponse = new FidoRegisterResponse
 			{
-				RegistrationDataAsBase64 = TestVectors.RegistrationResponseDataBase64,
+				RegistrationDataBase64 = TestVectors.RegistrationResponseDataBase64,
 				ClientData = FidoClientData.FromJson(TestVectors.ClientDataRegister)
 			};
 			return registerResponse;

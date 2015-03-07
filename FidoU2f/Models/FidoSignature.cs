@@ -54,6 +54,12 @@ namespace FidoU2f.Models
 			return ToWebSafeBase64() == other.ToWebSafeBase64();
 		}
 
+		public void Validate()
+		{
+			if (_bytes == null || _bytes.Length == 0)
+				throw new InvalidOperationException("Signature must not be empty");
+		}
+
 		public string ToWebSafeBase64()
 		{
 			return WebSafeBase64Converter.ToBase64String(_bytes);

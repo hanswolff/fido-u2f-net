@@ -29,18 +29,19 @@ namespace FidoU2f.Models
 	public class FidoRegisterResponse
 	{
 		[JsonProperty("RegistrationData")]
-		public string RegistrationDataAsBase64 { get; set; }
+		public string RegistrationDataBase64 { get; set; }
+
+		[JsonIgnore]
+		public FidoRegistrationData RegistrationData
+		{
+			get { return FidoRegistrationData.FromString(RegistrationDataBase64); }
+		}
 
 		public FidoClientData ClientData { get; set; }
 
 		public FidoRegisterResponse()
 		{
 			ClientData = new FidoClientData();
-		}
-
-		public FidoRegistrationData GetParsedRegistrationData()
-		{
-			return FidoRegistrationData.FromString(RegistrationDataAsBase64);
 		}
 
 		public static FidoRegisterResponse FromJson(string json)
@@ -50,7 +51,7 @@ namespace FidoU2f.Models
 
 		public void Validate()
 		{
-			if (String.IsNullOrEmpty(RegistrationDataAsBase64))
+			if (String.IsNullOrEmpty(RegistrationDataBase64))
 				throw new InvalidOperationException("Registration data is missing in registration response");
 
 			ClientData.Validate();

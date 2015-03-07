@@ -41,7 +41,7 @@ namespace FidoU2f.Tests.Models
 		public void Validate_RegistrationDataMissing_Throws()
 		{
 			var registerResponse = CreateGoodRegisterResponse();
-			registerResponse.RegistrationDataAsBase64 = "";
+			registerResponse.RegistrationDataBase64 = "";
 
 			Assert.Throws<InvalidOperationException>(() => registerResponse.Validate());
 		}
@@ -77,7 +77,7 @@ namespace FidoU2f.Tests.Models
 		{
 			return new FidoRegisterResponse
 			{
-				RegistrationDataAsBase64 = "registration data",
+				RegistrationDataBase64 = "registration data",
 				ClientData = new FidoClientData
 				{
 					Challenge = TestVectors.ServerChallengeRegisterBase64,

@@ -21,26 +21,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Collections.Generic;
-using FidoU2f.Models;
+using Newtonsoft.Json;
 
-namespace FidoU2f
+namespace FidoU2f.Models
 {
-	public interface IFidoUniversalTwoFactor
+	public class FidoAuthenticateResponse
 	{
-		FidoStartedRegistration StartRegistration(FidoAppId appId);
+		[JsonProperty("ClientData")]
+		public string ClientDataJson { get; set; }
 
-		FidoDeviceRegistration FinishRegistration(
-			FidoStartedRegistration startedRegistration,
-			string jsonDeviceResponse,
-			IEnumerable<FidoFacetId> trustedFacetIds);
+		[JsonProperty("SignatureData")]
+		public string SignatureDataBase64 { get; set; }
 
-		FidoStartedAuthentication StartAuthentication(
-			FidoAppId appId, FidoDeviceRegistration deviceRegistration);
+		[JsonProperty("KeyHandle")]
+		public string KeyHandleBase64 { get; set; }
 
-		uint FinishAuthentication(FidoStartedAuthentication startedAuthentication,
-			FidoAuthenticateResponse authResponse,
-			FidoDeviceRegistration deviceRegistration,
-			IEnumerable<FidoFacetId> trustedFacetIds);
+		[JsonIgnore]
+		public FidoClientData ClientData
+		{
+			get { return FidoClientData.FromJson(ClientDataJson); }
+		}
+
+		[JsonIgnore]
+		public FidoSignatureData SignatureData
+		{
+			get { return FidoSignatureData.FromString(SignatureDataBase64); }
+		}
+
+		[JsonIgnore]
+		public FidoKeyHandle KeyHandle
+		{
+			get { return FidoKeyHandle.FromWebSafeBase64(KeyHandleBase64); }
+		}
+
+		public static FidoAuthenticateResponse FromJson(string json)
+		{
+			return JsonConvert.DeserializeObject<FidoAuthenticateResponse>(json);
+		}
+
+		public void Validate()
+		{
+			ClientData.Validate();
+		}
+
+		public string ToJson()
+		{
+			return JsonConvert.SerializeObject(this);
+		}
 	}
 }
