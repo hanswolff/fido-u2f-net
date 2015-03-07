@@ -22,32 +22,57 @@
 // SOFTWARE.
 
 using System;
-using Newtonsoft.Json;
+using System.Text;
+using FidoU2f.Models;
+using NUnit.Framework;
 
-namespace FidoU2f.Models
+namespace FidoU2f.Tests.Models
 {
-	public class FidoRegisterResponse
+	[TestFixture]
+	public class TestFidoClientData
 	{
-		public string RegistrationData { get; set; }
-
-		public FidoClientData ClientData { get; set; }
-
-		public FidoRegisterResponse()
+		[Test]
+		public void Validate_Wellformed_NoException()
 		{
-			ClientData = new FidoClientData();
+			var clientData = CreateGoodClientData();
+			clientData.Validate();
 		}
 
-		public static FidoRegisterResponse FromJson(string json)
+		[Test]
+		public void Validate_ChallengeMissing_Throws()
 		{
-			return JsonConvert.DeserializeObject<FidoRegisterResponse>(json);
+			var clientData = CreateGoodClientData();
+			clientData.Challenge = "";
+
+			Assert.Throws<InvalidOperationException>(() => clientData.Validate());
 		}
 
-		public void Validate()
+		[Test]
+		public void Validate_OriginMissing_Throws()
 		{
-			if (String.IsNullOrEmpty(RegistrationData))
-				throw new InvalidOperationException("Registration data is missing in registration response");
+			var clientData = CreateGoodClientData();
+			clientData.Origin = "";
 
-			ClientData.Validate();
+			Assert.Throws<InvalidOperationException>(() => clientData.Validate());
 		}
-	}
+
+		[Test]
+		public void Validate_TypeMissing_Throws()
+		{
+			var clientData = CreateGoodClientData();
+            clientData.Type = "";
+
+			Assert.Throws<InvalidOperationException>(() => clientData.Validate());
+		}
+
+		internal static FidoClientData CreateGoodClientData()
+		{
+			return new FidoClientData
+			{
+				Challenge = WebSafeBase64Converter.ToBase64String(Encoding.Default.GetBytes("random challenge")),
+				Origin = "http://localhost",
+				Type = "type"
+			};
+		}
+    }
 }

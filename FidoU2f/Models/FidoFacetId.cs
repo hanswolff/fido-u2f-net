@@ -21,28 +21,53 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Resources;
-using System.Reflection;
+using System;
 
-// General Information about an assembly is controlled through the following 
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("FidoU2f")]
-[assembly: AssemblyCopyright("Copyright © 2015 by Hans Wolff")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
-[assembly: NeutralResourcesLanguage("en")]
+namespace FidoU2f.Models
+{
+	/// <summary>
+	/// FIDO FacetId (see section 3 in FIDO specification for valid FacetIds)
+	/// </summary>
+	public class FidoFacetId
+	{
+		private readonly string _facetId;
 
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.1.0.0")]
-[assembly: AssemblyFileVersion("0.1.0.0")]
+		public FidoFacetId(Uri facetId)
+		{
+			if (!facetId.IsAbsoluteUri)
+				ThrowFormatException();
+
+			ValidateUri(facetId);
+
+			_facetId = facetId.ToString().TrimEnd('/');
+		}
+
+		public FidoFacetId(string facetId)
+		{
+			Uri uri;
+			if (!Uri.TryCreate(facetId, UriKind.Absolute, out uri))
+				ThrowFormatException();
+
+			ValidateUri(uri);
+
+			_facetId = uri.ToString().TrimEnd('/');
+		}
+
+		private void ValidateUri(Uri uri)
+		{
+			var scheme = uri.Scheme.ToLowerInvariant();
+			if (scheme != "http" && scheme != "https")
+				ThrowFormatException();
+		}
+
+		private static void ThrowFormatException()
+		{
+			throw new FormatException("FIDO Facet ID must be a URL prefix (e.g. 'https://website.com')");
+		}
+
+		public override string ToString()
+		{
+			return _facetId;
+		}
+	}
+}

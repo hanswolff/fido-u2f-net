@@ -21,6 +21,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using FidoU2f.Models;
 
 namespace FidoU2f
@@ -28,6 +31,10 @@ namespace FidoU2f
 	public class UniversalTwoFactor
 	{
 		public static readonly string Version = "U2F_V2";
+
+		public const string AuthenticateType = "navigator.id.getAssertion";
+		public const string RegisterType = "navigator.id.finishEnrollment";
+
 
 		private readonly IGenerateFidoChallenge _generateFidoChallenge;
 
@@ -49,16 +56,41 @@ namespace FidoU2f
 			return new FidoStartedRegistration(appId, challenge);
 		}
 
-		public FidoDeviceRegistration FinishRegistration(FidoStartedRegistration startedRegistration, string deviceResponse)
+		public FidoDeviceRegistration FinishRegistration(FidoStartedRegistration startedRegistration, 
+			string deviceResponse, IEnumerable<FidoFacetId> trustedFacetIds)
 		{
+			if (deviceResponse == null) throw new ArgumentNullException("deviceResponse");
+
 			var registerResponse = FidoRegisterResponse.FromJson(deviceResponse);
-			return FinishRegistration(startedRegistration, registerResponse);
+			return FinishRegistration(startedRegistration, registerResponse, trustedFacetIds);
 		}
 
-		public FidoDeviceRegistration FinishRegistration(FidoStartedRegistration startedRegistration, FidoRegisterResponse registerResponse)
+		public FidoDeviceRegistration FinishRegistration(FidoStartedRegistration startedRegistration, 
+			FidoRegisterResponse registerResponse, IEnumerable<FidoFacetId> trustedFacetIds)
 		{
-			// TODO: missing logic
-			return null;
+			if (startedRegistration == null) throw new ArgumentNullException("startedRegistration");
+			if (registerResponse == null) throw new ArgumentNullException("registerResponse");
+			if (trustedFacetIds == null) throw new ArgumentNullException("trustedFacetIds");
+
+			registerResponse.Validate();
+
+			if (registerResponse.ClientData.Type != RegisterType)
+			{
+				var message = String.Format("Unexpected type in client data (expected '{0}' but was '{1}')",
+					RegisterType, registerResponse.ClientData.Type);
+				throw new InvalidOperationException(message);
+			}
+
+			if (registerResponse.ClientData.Challenge != startedRegistration.Challenge)
+				throw new InvalidOperationException("Incorrect challenge signed in client data");
+
+			var origin = registerResponse.ClientData.Origin;
+            if (!trustedFacetIds.Any(x => x.ToString().Equals(origin)))
+				throw new InvalidOperationException(String.Format("{0} is not a recognized trusted origin for this backend", origin));
+
+			// TODO: create device registration
+
+			throw new NotImplementedException();
 		}
 	}
 }

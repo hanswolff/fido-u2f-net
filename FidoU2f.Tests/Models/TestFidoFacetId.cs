@@ -21,28 +21,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Resources;
-using System.Reflection;
+using System;
+using FidoU2f.Models;
+using NUnit.Framework;
 
-// General Information about an assembly is controlled through the following 
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("FidoU2f")]
-[assembly: AssemblyCopyright("Copyright © 2015 by Hans Wolff")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
-[assembly: NeutralResourcesLanguage("en")]
+namespace FidoU2f.Tests.Models
+{
+	[TestFixture]
+	public class TestFidoFacetId
+	{
+		[TestCase("http://localhost")]
+		[TestCase("http://localhost/")]
+		[TestCase("http://localhost:12345")]
+		[TestCase("http://localhost:12345/")]
+		[TestCase("http://localhost/somepath")]
+		[TestCase("https://www.website.com")]
+		[TestCase("https://www.website.com///")]
+		public void Constructor_WellFormattedFacetIds(string facetId)
+		{
+			new FidoFacetId(facetId);
+		}
 
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.1.0.0")]
-[assembly: AssemblyFileVersion("0.1.0.0")]
+		[TestCase("ftp://localhost")]
+		[TestCase("http://localhost:9999999")]
+		public void Constructor_IncorrectlyFormattedFacetIds(string facetId)
+		{
+			Assert.Throws<FormatException>(() => new FidoFacetId(facetId));
+		}
+
+		[Test]
+		public void ToString_Works()
+		{
+			Assert.AreEqual("http://localhost", new FidoFacetId("http://localhost/").ToString());
+		}
+	}
+}
