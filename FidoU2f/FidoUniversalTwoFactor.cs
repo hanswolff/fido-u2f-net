@@ -30,7 +30,7 @@ using Org.BouncyCastle.Security;
 
 namespace FidoU2f
 {
-	public class UniversalTwoFactor
+	public class FidoUniversalTwoFactor : IFidoUniversalTwoFactor
 	{
 		public static readonly string Version = "U2F_V2";
 
@@ -40,14 +40,19 @@ namespace FidoU2f
 
 		private readonly IGenerateFidoChallenge _generateFidoChallenge;
 
-		public UniversalTwoFactor()
+		public FidoUniversalTwoFactor()
 			: this(null)
 		{
 		}
 
-		public UniversalTwoFactor(IGenerateFidoChallenge generateFidoChallenge)
+		public FidoUniversalTwoFactor(IGenerateFidoChallenge generateFidoChallenge)
 		{
 			_generateFidoChallenge = generateFidoChallenge ?? new GenerateRandomFidoChallenge();
+		}
+
+		public FidoStartedRegistration StartRegistration(string appId)
+		{
+			return StartRegistration(new FidoAppId(appId));
 		}
 
 		public FidoStartedRegistration StartRegistration(FidoAppId appId)
@@ -59,11 +64,11 @@ namespace FidoU2f
 		}
 
 		public FidoDeviceRegistration FinishRegistration(FidoStartedRegistration startedRegistration, 
-			string deviceResponse, IEnumerable<FidoFacetId> trustedFacetIds)
+			string jsonDeviceResponse, IEnumerable<FidoFacetId> trustedFacetIds)
 		{
-			if (deviceResponse == null) throw new ArgumentNullException("deviceResponse");
+			if (jsonDeviceResponse == null) throw new ArgumentNullException("jsonDeviceResponse");
 
-			var registerResponse = FidoRegisterResponse.FromJson(deviceResponse);
+			var registerResponse = FidoRegisterResponse.FromJson(jsonDeviceResponse);
 			return FinishRegistration(startedRegistration, registerResponse, trustedFacetIds);
 		}
 

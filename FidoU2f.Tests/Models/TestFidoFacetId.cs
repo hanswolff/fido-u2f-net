@@ -44,9 +44,50 @@ namespace FidoU2f.Tests.Models
 
 		[TestCase("ftp://localhost")]
 		[TestCase("http://localhost:9999999")]
+		[TestCase("/path")]
 		public void Constructor_IncorrectlyFormattedFacetIds(string facetId)
 		{
 			Assert.Throws<FormatException>(() => new FidoFacetId(facetId));
+		}
+
+		[TestCase("ftp://localhost")]
+		[TestCase("/path")]
+		public void Constructor_IncorrectUri(string facetId)
+		{
+			Assert.Throws<FormatException>(() => new FidoFacetId(new Uri(facetId, UriKind.RelativeOrAbsolute)));
+		}
+
+		[Test]
+		public void Equals_Null()
+		{
+			Assert.IsFalse(new FidoFacetId("http://example.com").Equals((FidoFacetId)null));
+		}
+
+		[TestCase("http://example.com", "http://example.com")]
+		[TestCase("http://Example.com", "http://example.com")]
+		[TestCase("http://example.com/", "http://example.com")]
+		[TestCase("http://example.com/path", "http://example.com")]
+		public void Equals_AppId(string facetId1, string appId)
+		{
+			Assert.IsTrue(new FidoFacetId(facetId1).Equals(new FidoAppId(appId)));
+			Assert.IsTrue(new FidoFacetId(new Uri(facetId1)).Equals(new FidoAppId(appId)));
+		}
+
+		[TestCase("http://example.com", "http://example.com")]
+		[TestCase("http://Example.com", "http://example.com")]
+		[TestCase("http://example.com/", "http://example.com")]
+		public void Equals_FacetId(string facetId1, string facetId2)
+		{
+			Assert.IsTrue(new FidoFacetId(facetId1).Equals(new FidoFacetId(facetId2)));
+			Assert.IsTrue(new FidoFacetId(facetId1).Equals(facetId2));
+		}
+
+		[TestCase("http://example.com/path", "http://example.com")]
+		[TestCase("http://example.com", "http://example.com/path")]
+		public void NotEquals(string faceId1, string facetId2)
+		{
+			Assert.IsFalse(new FidoFacetId(faceId1).Equals(new FidoFacetId(facetId2)));
+			Assert.IsFalse(new FidoFacetId(faceId1).Equals(facetId2));
 		}
 
 		[Test]

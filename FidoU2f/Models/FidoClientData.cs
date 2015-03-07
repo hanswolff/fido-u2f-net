@@ -38,8 +38,12 @@ namespace FidoU2f.Models
 		[JsonProperty("origin")]
 		public string Origin { get; set; }
 
+		private string _overriddenRawJsonValue;
 		[JsonIgnore]
-		public string RawJsonValue { get; private set; }
+		public string RawJsonValue
+		{
+			get { return _overriddenRawJsonValue ?? JsonConvert.SerializeObject(this); }
+		}
 
 		public static FidoClientData FromJson(string json)
 		{
@@ -55,7 +59,7 @@ namespace FidoU2f.Models
 
 			var clientData = new FidoClientData
 			{
-				RawJsonValue = json,
+				_overriddenRawJsonValue = json,
 				Type = type.ToString(),
 				Challenge = challenge.ToString()
 			};

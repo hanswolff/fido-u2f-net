@@ -25,13 +25,9 @@ using System;
 
 namespace FidoU2f.Models
 {
-	public class FidoPublicKey
+	public class FidoPublicKey : IEquatable<FidoPublicKey>
 	{
 		private readonly byte[] _bytes;
-
-		public FidoPublicKey()
-		{
-		}
 
 		public FidoPublicKey(byte[] publicKeyBytes)
 		{
@@ -52,9 +48,20 @@ namespace FidoU2f.Models
 			return _bytes;
 		}
 
-		public override string ToString()
+		public bool Equals(FidoPublicKey other)
+		{
+			if (other == null) return false;
+			return ToWebSafeBase64() == other.ToWebSafeBase64();
+		}
+
+		public string ToWebSafeBase64()
 		{
 			return WebSafeBase64Converter.ToBase64String(_bytes);
+		}
+
+		public override string ToString()
+		{
+			return ToWebSafeBase64();
 		}
 	}
 }

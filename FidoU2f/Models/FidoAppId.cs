@@ -28,7 +28,7 @@ namespace FidoU2f.Models
 	/// <summary>
 	/// FIDO AppID (see section 3 in FIDO specification for valid AppIDs)
 	/// </summary>
-	public class FidoAppId
+	public class FidoAppId : IEquatable<FidoAppId>, IEquatable<FidoFacetId>, IEquatable<string>
 	{
 		private readonly string _appId;
 
@@ -66,6 +66,24 @@ namespace FidoU2f.Models
 		private static void ThrowFormatException()
 		{
 			throw new FormatException("FIDO App ID must be a URL prefix (e.g. 'https://website.com')");
+		}
+
+		public bool Equals(FidoAppId other)
+		{
+			if (other == null) return false;
+			return other.ToString() == ToString();
+		}
+
+		public bool Equals(FidoFacetId other)
+		{
+			if (other == null) return false;
+			return other.ToString() == ToString();
+		}
+
+		public bool Equals(string other)
+		{
+			if (other == null) return false;
+			return other == ToString();
 		}
 
 		public override string ToString()

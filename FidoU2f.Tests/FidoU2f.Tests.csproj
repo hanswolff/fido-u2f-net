@@ -59,11 +59,14 @@
     <Compile Include="Models\TestFidoFacetId.cs" />
     <Compile Include="Models\TestFidoAppId.cs" />
     <Compile Include="Models\TestFidoClientData.cs" />
+    <Compile Include="Models\TestFidoSignature.cs" />
+    <Compile Include="Models\TestFidoPublicKey.cs" />
+    <Compile Include="Models\TestFidoKeyHandle.cs" />
     <Compile Include="Models\TestFidoRegisterResponse.cs" />
     <Compile Include="Models\TestFidoRegistrationData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestVectors.cs" />
-    <Compile Include="TestUniversalTwoFactor.cs" />
+    <Compile Include="TestFidoUniversalTwoFactor.cs" />
     <Compile Include="TestWebSafeBase64Converter.cs" />
   </ItemGroup>
   <ItemGroup>

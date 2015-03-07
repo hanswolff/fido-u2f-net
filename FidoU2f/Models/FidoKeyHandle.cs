@@ -25,13 +25,9 @@ using System;
 
 namespace FidoU2f.Models
 {
-	public class FidoKeyHandle
+	public class FidoKeyHandle : IEquatable<FidoKeyHandle>
 	{
 		private readonly byte[] _bytes;
-
-		public FidoKeyHandle()
-		{
-		}
 
 		public FidoKeyHandle(byte[] keyHandleBytes)
 		{
@@ -40,7 +36,7 @@ namespace FidoU2f.Models
 			_bytes = keyHandleBytes;
 		}
 
-		public static FidoKeyHandle FromString(string keyHandle)
+		public static FidoKeyHandle FromWebSafeBase64(string keyHandle)
 		{
 			if (keyHandle == null) throw new ArgumentNullException("keyHandle");
 
@@ -52,9 +48,20 @@ namespace FidoU2f.Models
 			return _bytes;
 		}
 
-		public override string ToString()
+		public bool Equals(FidoKeyHandle other)
+		{
+			if (other == null) return false;
+			return ToWebSafeBase64() == other.ToWebSafeBase64();
+		}
+
+		public string ToWebSafeBase64()
 		{
 			return WebSafeBase64Converter.ToBase64String(_bytes);
+		}
+
+		public override string ToString()
+		{
+			return ToWebSafeBase64();
 		}
 	}
 }

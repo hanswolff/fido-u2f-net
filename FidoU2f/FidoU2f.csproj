@@ -44,6 +44,7 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="GenerateRandomFidoChallenge.cs" />
+    <Compile Include="IFidoUniversalTwoFactor.cs" />
     <Compile Include="Models\FidoAppId.cs" />
     <Compile Include="Models\FidoFacetId.cs" />
     <Compile Include="Models\FidoDeviceRegistration.cs" />
@@ -51,8 +52,9 @@
     <Compile Include="Models\FidoSignature.cs" />
     <Compile Include="Models\FidoRegisterResponse.cs" />
     <Compile Include="Models\FidoRegistrationData.cs" />
+    <Compile Include="Models\FidoStartedAuthentication.cs" />
     <Compile Include="Models\FidoStartedRegistration.cs" />
-    <Compile Include="UniversalTwoFactor.cs" />
+    <Compile Include="FidoUniversalTwoFactor.cs" />
     <Compile Include="WebSafeBase64Converter.cs" />
     <Compile Include="IGenerateFidoChallenge.cs" />
     <Compile Include="Models\FidoAttestationCertificate.cs" />

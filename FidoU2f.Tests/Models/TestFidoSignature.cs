@@ -21,39 +21,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
-using Org.BouncyCastle.X509;
+using System.Text;
+using FidoU2f.Models;
+using NUnit.Framework;
 
-namespace FidoU2f.Models
+namespace FidoU2f.Tests.Models
 {
-	public class FidoAttestationCertificate
+	[TestFixture]
+	public class TestFidoSignature
 	{
-		public byte[] RawData { get; private set; }
-		public X509Certificate Certificate { get; private set; }
-
-		public FidoAttestationCertificate(byte[] attestationCertificateBytes)
+		[Test]
+		public void Equals_Null()
 		{
-			if (attestationCertificateBytes == null) throw new ArgumentNullException("attestationCertificateBytes");
-
-			Certificate = new X509CertificateParser().ReadCertificate(attestationCertificateBytes);
-			RawData = attestationCertificateBytes;
+			Assert.IsFalse(FidoSignature.FromWebSafeBase64("").Equals(null));
 		}
 
-		public static FidoAttestationCertificate FromWebSafeBase64(string attestationCertificate)
+		[Test]
+		public void Equals_AreEqual()
 		{
-			if (attestationCertificate == null) throw new ArgumentNullException("attestationCertificate");
-
-			return new FidoAttestationCertificate(WebSafeBase64Converter.FromBase64String(attestationCertificate));
+			var value1 = new FidoSignature(Encoding.Default.GetBytes("signature"));
+			var value2 = new FidoSignature(Encoding.Default.GetBytes("signature"));
+			Assert.IsTrue(value1.Equals(value2));
 		}
 
-		public string ToWebSafeBase64()
+		[Test]
+		public void Equals_NotEqual()
 		{
-			return WebSafeBase64Converter.ToBase64String(RawData);
-		}
-
-		public override string ToString()
-		{
-			return ToWebSafeBase64();
+			var value1 = new FidoSignature(Encoding.Default.GetBytes("signature"));
+			var value2 = new FidoSignature(Encoding.Default.GetBytes("Signature"));
+			Assert.IsFalse(value1.Equals(value2));
 		}
 	}
 }

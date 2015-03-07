@@ -22,38 +22,24 @@
 // SOFTWARE.
 
 using System;
-using Org.BouncyCastle.X509;
 
 namespace FidoU2f.Models
 {
-	public class FidoAttestationCertificate
+	public class FidoStartedAuthentication
 	{
-		public byte[] RawData { get; private set; }
-		public X509Certificate Certificate { get; private set; }
+		public FidoAppId AppId { get; set; }
+		public string Challenge { get; set; }
+		public FidoKeyHandle KeyHandle { get; set; }
 
-		public FidoAttestationCertificate(byte[] attestationCertificateBytes)
+		public FidoStartedAuthentication(FidoAppId appId, string challenge, FidoKeyHandle keyHandle)
 		{
-			if (attestationCertificateBytes == null) throw new ArgumentNullException("attestationCertificateBytes");
+			if (appId == null) throw new ArgumentNullException("appId");
+			if (challenge == null) throw new ArgumentNullException("challenge");
+			if (keyHandle == null) throw new ArgumentNullException("keyHandle");
 
-			Certificate = new X509CertificateParser().ReadCertificate(attestationCertificateBytes);
-			RawData = attestationCertificateBytes;
-		}
-
-		public static FidoAttestationCertificate FromWebSafeBase64(string attestationCertificate)
-		{
-			if (attestationCertificate == null) throw new ArgumentNullException("attestationCertificate");
-
-			return new FidoAttestationCertificate(WebSafeBase64Converter.FromBase64String(attestationCertificate));
-		}
-
-		public string ToWebSafeBase64()
-		{
-			return WebSafeBase64Converter.ToBase64String(RawData);
-		}
-
-		public override string ToString()
-		{
-			return ToWebSafeBase64();
+			AppId = appId;
+			Challenge = challenge;
+			KeyHandle = keyHandle;
 		}
 	}
 }

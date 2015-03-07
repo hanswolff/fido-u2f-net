@@ -28,7 +28,7 @@ namespace FidoU2f.Models
 	/// <summary>
 	/// FIDO FacetId (see section 3 in FIDO specification for valid FacetIds)
 	/// </summary>
-	public class FidoFacetId
+	public class FidoFacetId : IEquatable<FidoAppId>, IEquatable<FidoFacetId>, IEquatable<string>
 	{
 		private readonly string _facetId;
 
@@ -58,6 +58,24 @@ namespace FidoU2f.Models
 			var scheme = uri.Scheme.ToLowerInvariant();
 			if (scheme != "http" && scheme != "https")
 				ThrowFormatException();
+		}
+
+		public bool Equals(FidoAppId other)
+		{
+			if (other == null) return false;
+			return ToString().StartsWith(other.ToString());
+		}
+
+		public bool Equals(FidoFacetId other)
+		{
+			if (other == null) return false;
+			return other.ToString() == ToString();
+		}
+
+		public bool Equals(string other)
+		{
+			if (other == null) return false;
+			return other == ToString();
 		}
 
 		private static void ThrowFormatException()

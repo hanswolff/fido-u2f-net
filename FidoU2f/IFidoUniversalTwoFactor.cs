@@ -21,39 +21,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
-using Org.BouncyCastle.X509;
+using System.Collections.Generic;
+using FidoU2f.Models;
 
-namespace FidoU2f.Models
+namespace FidoU2f
 {
-	public class FidoAttestationCertificate
+	public interface IFidoUniversalTwoFactor
 	{
-		public byte[] RawData { get; private set; }
-		public X509Certificate Certificate { get; private set; }
+		FidoStartedRegistration StartRegistration(FidoAppId appId);
 
-		public FidoAttestationCertificate(byte[] attestationCertificateBytes)
-		{
-			if (attestationCertificateBytes == null) throw new ArgumentNullException("attestationCertificateBytes");
-
-			Certificate = new X509CertificateParser().ReadCertificate(attestationCertificateBytes);
-			RawData = attestationCertificateBytes;
-		}
-
-		public static FidoAttestationCertificate FromWebSafeBase64(string attestationCertificate)
-		{
-			if (attestationCertificate == null) throw new ArgumentNullException("attestationCertificate");
-
-			return new FidoAttestationCertificate(WebSafeBase64Converter.FromBase64String(attestationCertificate));
-		}
-
-		public string ToWebSafeBase64()
-		{
-			return WebSafeBase64Converter.ToBase64String(RawData);
-		}
-
-		public override string ToString()
-		{
-			return ToWebSafeBase64();
-		}
+		FidoDeviceRegistration FinishRegistration(FidoStartedRegistration startedRegistration,
+			string jsonDeviceResponse, IEnumerable<FidoFacetId> trustedFacetIds);
 	}
 }
