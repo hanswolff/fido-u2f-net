@@ -135,6 +135,7 @@ namespace FidoU2f.Tests
 
 			Assert.AreEqual(TestVectors.AppIdEnroll, startedAuthentication.AppId.ToString());
 			Assert.AreEqual(randomChallenge, WebSafeBase64Converter.FromBase64String(startedAuthentication.Challenge));
+			Assert.AreEqual(deviceRegistration.KeyHandle, startedAuthentication.KeyHandle);
 		}
 
 		[Test]
@@ -171,7 +172,7 @@ namespace FidoU2f.Tests
 			var cert = FidoAttestationCertificate.FromWebSafeBase64(TestVectors.AttestationCertificate);
 			var keyHandle = FidoKeyHandle.FromWebSafeBase64(TestVectors.KeyHandle);
 			var publicKey = FidoPublicKey.FromWebSafeBase64(TestVectors.PublicKey);
-			return new FidoDeviceRegistration(keyHandle, publicKey, cert, 1);
+			return new FidoDeviceRegistration(keyHandle, publicKey, cert, 0);
 		}
 	}
 }

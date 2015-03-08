@@ -21,64 +21,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Text;
-using Newtonsoft.Json;
-
 namespace FidoU2f.Models
 {
 	public class FidoAuthenticateResponse : IValidate
 	{
-		[JsonProperty("ClientData")]
-		public string ClientDataJson { get; set; }
+		public FidoClientData ClientData { get; private set; }
 
-		[JsonProperty("SignatureData")]
-		public string SignatureDataBase64 { get; set; }
+		public FidoSignatureData SignatureData { get; private set; }
 
-		[JsonProperty("KeyHandle")]
-		public string KeyHandleBase64 { get; set; }
-
-		[JsonIgnore]
-		public FidoClientData ClientData
-		{
-			get { return FidoClientData.FromJson(ClientDataJson); }
-		}
-
-		[JsonIgnore]
-		public FidoSignatureData SignatureData
-		{
-			get { return FidoSignatureData.FromWebBase64(SignatureDataBase64); }
-		}
-
-		[JsonIgnore]
-		public FidoKeyHandle KeyHandle
-		{
-			get { return FidoKeyHandle.FromWebSafeBase64(KeyHandleBase64); }
-		}
-
-		public static FidoAuthenticateResponse FromJson(string json)
-		{
-			return JsonConvert.DeserializeObject<FidoAuthenticateResponse>(json);
-		}
+		public FidoKeyHandle KeyHandle { get; private set; }
 
 		public FidoAuthenticateResponse()
 		{
 		}
 
-		public FidoAuthenticateResponse(FidoClientData clientData, FidoSignatureData signature, FidoKeyHandle keyHandle)
+		public FidoAuthenticateResponse(FidoClientData clientData, FidoSignatureData signatureData, FidoKeyHandle keyHandle)
 		{
-			ClientDataJson = JsonConvert.SerializeObject(clientData);
-			SignatureDataBase64 = WebSafeBase64Converter.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(signature)));
-			KeyHandleBase64 = keyHandle.ToWebSafeBase64();
+			ClientData = clientData;
+			SignatureData = signatureData;
+			KeyHandle = keyHandle;
 		}
 
 		public void Validate()
 		{
 			ClientData.Validate();
-		}
-
-		public string ToJson()
-		{
-			return JsonConvert.SerializeObject(this);
 		}
 	}
 }

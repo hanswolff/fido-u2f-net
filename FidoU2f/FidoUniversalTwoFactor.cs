@@ -187,15 +187,6 @@ namespace FidoU2f
 		}
 
 		public uint FinishAuthentication(FidoStartedAuthentication startedAuthentication,
-			string jsonDeviceResponse,
-			FidoDeviceRegistration deviceRegistration,
-			IEnumerable<FidoFacetId> trustedFacetIds)
-		{
-			var authResponse = FidoAuthenticateResponse.FromJson(jsonDeviceResponse);
-            return FinishAuthentication(startedAuthentication, authResponse, deviceRegistration, trustedFacetIds);
-		}
-
-		public uint FinishAuthentication(FidoStartedAuthentication startedAuthentication,
 			FidoAuthenticateResponse authResponse,
 			FidoDeviceRegistration deviceRegistration,
 			IEnumerable<FidoFacetId> trustedFacetIds)
