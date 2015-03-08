@@ -67,7 +67,6 @@ namespace FidoU2f.Tests.Models
 		[TestCase("http://Example.com", "http://example.com")]
 		[TestCase("http://example.com/", "http://example.com")]
 		[TestCase("http://example.com/path", "http://example.com")]
-		[TestCase("http://example.com/path", "http://example.com")]
 		[TestCase("http://example.com", "http://example.com/path")]
 		public void Equals_AppId(string facetId1, string appId)
 		{
