@@ -22,6 +22,7 @@
 // SOFTWARE.
 
 using System;
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -45,8 +46,16 @@ namespace FidoU2f.Models
 			get { return _overriddenRawJsonValue ?? JsonConvert.SerializeObject(this); }
 		}
 
+		public static FidoClientData FromWebSafeBase64(string base64)
+		{
+			var json = WebSafeBase64Converter.FromBase64String(base64);
+			return FromJson(Encoding.UTF8.GetString(json, 0, json.Length));
+		}
+
 		public static FidoClientData FromJson(string json)
 		{
+			if (json == null) throw new ArgumentNullException("json");
+
 			var element = JObject.Parse(json);
 			if (element == null)
 				throw new InvalidOperationException("Client data must be in JSON format");

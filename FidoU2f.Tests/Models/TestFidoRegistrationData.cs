@@ -32,7 +32,7 @@ namespace FidoU2f.Tests.Models
 		[Test]
 		public void FromString()
 		{
-			var registrationData = FidoRegistrationData.FromString(TestVectors.RegistrationResponseDataBase64);
+			var registrationData = FidoRegistrationData.FromWebSafeBase64(TestVectors.RegistrationResponseDataBase64);
 
 			Assert.IsNotNull(registrationData.AttestationCertificate);
 			Assert.IsNotNullOrEmpty(registrationData.KeyHandle.ToString());

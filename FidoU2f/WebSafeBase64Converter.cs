@@ -22,6 +22,7 @@
 // SOFTWARE.
 
 using System;
+using System.Text;
 
 namespace FidoU2f
 {
@@ -44,6 +45,19 @@ namespace FidoU2f
 				.Replace('+', '-')
 				.Replace('/', '_');
 			return result;
+		}
+
+		/// <summary>
+		/// Converts a byte array to a web-safe base64 string
+		/// </summary>
+		/// <param name="value">string value to convert</param>
+		/// <returns>web safe base64 encoded string</returns>
+		public static string ToBase64String(string value)
+		{
+			if (value == null) return null;
+
+			var byteArray = Encoding.UTF8.GetBytes(value);
+			return ToBase64String(byteArray);
 		}
 
 		/// <summary>

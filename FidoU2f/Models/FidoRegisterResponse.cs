@@ -28,20 +28,26 @@ namespace FidoU2f.Models
 {
 	public class FidoRegisterResponse : IValidate
 	{
-		[JsonProperty("RegistrationData")]
+		[JsonProperty("registrationData")]
 		public string RegistrationDataBase64 { get; set; }
 
+		[JsonProperty("clientData")]
+		public string ClientDataBase64 { get; set; }
+
+		private FidoRegistrationData _overrideRegistrationData;
 		[JsonIgnore]
 		public FidoRegistrationData RegistrationData
 		{
-			get { return FidoRegistrationData.FromString(RegistrationDataBase64); }
+			get { return _overrideRegistrationData ?? FidoRegistrationData.FromWebSafeBase64(RegistrationDataBase64); }
+			set { _overrideRegistrationData = value; }
 		}
 
-		public FidoClientData ClientData { get; set; }
-
-		public FidoRegisterResponse()
+		private FidoClientData _overrideClientData;
+		[JsonIgnore]
+		public FidoClientData ClientData
 		{
-			ClientData = new FidoClientData();
+			get { return _overrideClientData ?? FidoClientData.FromWebSafeBase64(ClientDataBase64); }
+			set { _overrideClientData = value; }
 		}
 
 		public static FidoRegisterResponse FromJson(string json)
@@ -59,7 +65,13 @@ namespace FidoU2f.Models
 
 		public string ToJson()
 		{
-			return JsonConvert.SerializeObject(this);
+			if (_overrideRegistrationData != null)
+				RegistrationDataBase64 = JsonConvert.SerializeObject(_overrideRegistrationData);
+
+			if (_overrideClientData != null)
+				ClientDataBase64 = JsonConvert.SerializeObject(_overrideClientData);
+
+            return JsonConvert.SerializeObject(this);
 		}
 	}
 }
