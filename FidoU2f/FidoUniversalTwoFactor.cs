@@ -89,7 +89,7 @@ namespace FidoU2f
 			if (clientData.Challenge != startedRegistration.Challenge)
 				throw new InvalidOperationException("Incorrect challenge signed in client data");
 
-            ValidateOrigin(trustedFacetIds, clientData.Origin);
+            ValidateOrigin(trustedFacetIds, new FidoFacetId(clientData.Origin));
 
 			var registrationData = registerResponse.RegistrationData;
 			VerifyResponseSignature(startedRegistration.AppId, registrationData, clientData);
@@ -98,20 +98,19 @@ namespace FidoU2f
 				registrationData.AttestationCertificate, 0);
 		}
 
-		private static void ValidateOrigin(IEnumerable<FidoFacetId> trustedFacetIds, string origin)
+		private static void ValidateOrigin(IEnumerable<FidoFacetId> trustedFacetIds, FidoFacetId origin)
 		{
-			if (!trustedFacetIds.Any(x => x.ToString().Equals(origin)))
+			if (!trustedFacetIds.Any(x => x.Equals(origin)))
 				throw new InvalidOperationException(String.Format("{0} is not a recognized trusted origin for this backend", origin));
 		}
 
 		private static void ExpectClientDataType(FidoClientData clientData, string expectedType)
 		{
-			if (clientData.Type != expectedType)
-			{
-				var message = String.Format("Unexpected type in client data (expected '{0}' but was '{1}')",
-					expectedType, clientData.Type);
-				throw new InvalidOperationException(message);
-			}
+			if (clientData.Type == expectedType) return;
+
+			var message = String.Format("Unexpected type in client data (expected '{0}' but was '{1}')",
+				expectedType, clientData.Type);
+			throw new InvalidOperationException(message);
 		}
 
 		private void VerifyResponseSignature(FidoAppId appId, FidoRegistrationData registrationData, FidoClientData clientData)
@@ -200,7 +199,7 @@ namespace FidoU2f
 			if (clientData.Challenge != startedAuthentication.Challenge)
 				throw new InvalidOperationException("Incorrect challenge signed in client data");
 
-			ValidateOrigin(trustedFacetIds, clientData.Origin);
+			ValidateOrigin(trustedFacetIds, new FidoFacetId(clientData.Origin));
 
 			var signatureData = authResponse.SignatureData;
 

@@ -26,31 +26,27 @@ using System;
 namespace FidoU2f.Models
 {
 	/// <summary>
-	/// FIDO AppID (see section 3 in FIDO specification for valid AppIDs)
+	/// FIDO AppId (see section 3 in FIDO specification for valid FacetIds)
 	/// </summary>
-	public class FidoAppId : IEquatable<FidoAppId>, IEquatable<FidoFacetId>, IEquatable<string>
+	public class FidoAppId : IEquatable<FidoAppId>, IEquatable<FidoFacetId>
 	{
-		private readonly string _appId;
+		private readonly Uri _appUri;
 
 		public FidoAppId(Uri appId)
 		{
 			if (!appId.IsAbsoluteUri)
 				ThrowFormatException();
+			_appUri = appId;
 
 			ValidateUri(appId);
-
-			_appId = appId.ToString().TrimEnd('/');
 		}
 
-		public FidoAppId(string appId)
+		public FidoAppId(string facetId)
 		{
-			Uri uri;
-			if (!Uri.TryCreate(appId, UriKind.Absolute, out uri))
+			if (!Uri.TryCreate(facetId, UriKind.Absolute, out _appUri))
 				ThrowFormatException();
 
-			ValidateUri(uri);
-
-			_appId = uri.ToString().TrimEnd('/');
+			ValidateUri(_appUri);
 		}
 
 		private void ValidateUri(Uri uri)
@@ -60,32 +56,37 @@ namespace FidoU2f.Models
 				ThrowFormatException();
 		}
 
-		private static void ThrowFormatException()
+		public bool Equals(FidoFacetId other)
 		{
-			throw new FormatException("FIDO App ID must be a URL prefix (e.g. 'https://website.com')");
+			if (other == null) return false;
+			return ToString().StartsWith(other.ToString());
 		}
 
 		public bool Equals(FidoAppId other)
 		{
 			if (other == null) return false;
-			return other.ToString() == ToString();
+			var localAuthority = GetAuthority(_appUri);
+			var otherAuthority = GetAuthority(other._appUri);
+			return localAuthority == otherAuthority;
 		}
 
-		public bool Equals(FidoFacetId other)
+		private static string GetAuthority(Uri uri)
 		{
-			if (other == null) return false;
-			return other.ToString() == ToString();
+			var isDefaultPort = 
+				(uri.Scheme == "http" && uri.Port == 80) || 
+				(uri.Scheme == "https" && uri.Port == 443);
+
+			return uri.Scheme + "://" + uri.DnsSafeHost + (isDefaultPort ? "" : ":" + uri.Port);
 		}
 
-		public bool Equals(string other)
+		private static void ThrowFormatException()
 		{
-			if (other == null) return false;
-			return other == ToString();
+			throw new FormatException("FIDO App ID must be a URL prefix (e.g. 'https://website.com')");
 		}
 
 		public override string ToString()
 		{
-			return _appId;
+			return GetAuthority(_appUri);
 		}
 	}
 }

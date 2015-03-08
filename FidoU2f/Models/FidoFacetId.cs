@@ -28,29 +28,25 @@ namespace FidoU2f.Models
 	/// <summary>
 	/// FIDO FacetId (see section 3 in FIDO specification for valid FacetIds)
 	/// </summary>
-	public class FidoFacetId : IEquatable<FidoAppId>, IEquatable<FidoFacetId>, IEquatable<string>
+	public class FidoFacetId : IEquatable<FidoAppId>, IEquatable<FidoFacetId>
 	{
-		private readonly string _facetId;
+		private readonly Uri _facetUri;
 
 		public FidoFacetId(Uri facetId)
 		{
 			if (!facetId.IsAbsoluteUri)
 				ThrowFormatException();
+			_facetUri = facetId;
 
 			ValidateUri(facetId);
-
-			_facetId = facetId.ToString().TrimEnd('/');
 		}
 
 		public FidoFacetId(string facetId)
 		{
-			Uri uri;
-			if (!Uri.TryCreate(facetId, UriKind.Absolute, out uri))
+			if (!Uri.TryCreate(facetId, UriKind.Absolute, out _facetUri))
 				ThrowFormatException();
 
-			ValidateUri(uri);
-
-			_facetId = uri.ToString().TrimEnd('/');
+			ValidateUri(_facetUri);
 		}
 
 		private void ValidateUri(Uri uri)
@@ -69,13 +65,18 @@ namespace FidoU2f.Models
 		public bool Equals(FidoFacetId other)
 		{
 			if (other == null) return false;
-			return other.ToString() == ToString();
+			var localAuthority = GetAuthority(_facetUri);
+			var otherAuthority = GetAuthority(other._facetUri);
+			return localAuthority == otherAuthority;
 		}
 
-		public bool Equals(string other)
+		private static string GetAuthority(Uri uri)
 		{
-			if (other == null) return false;
-			return other == ToString();
+			var isDefaultPort =
+				(uri.Scheme == "http" && uri.Port == 80) ||
+				(uri.Scheme == "https" && uri.Port == 443);
+
+			return uri.Scheme + "://" + uri.DnsSafeHost + (isDefaultPort ? "" : ":" + uri.Port);
 		}
 
 		private static void ThrowFormatException()
@@ -85,7 +86,7 @@ namespace FidoU2f.Models
 
 		public override string ToString()
 		{
-			return _facetId;
+			return GetAuthority(_facetUri);
 		}
 	}
 }

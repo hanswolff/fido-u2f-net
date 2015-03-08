@@ -67,6 +67,8 @@ namespace FidoU2f.Tests.Models
 		[TestCase("http://Example.com", "http://example.com")]
 		[TestCase("http://example.com/", "http://example.com")]
 		[TestCase("http://example.com/path", "http://example.com")]
+		[TestCase("http://example.com/path", "http://example.com")]
+		[TestCase("http://example.com", "http://example.com/path")]
 		public void Equals_AppId(string facetId1, string appId)
 		{
 			Assert.IsTrue(new FidoFacetId(facetId1).Equals(new FidoAppId(appId)));
@@ -76,18 +78,11 @@ namespace FidoU2f.Tests.Models
 		[TestCase("http://example.com", "http://example.com")]
 		[TestCase("http://Example.com", "http://example.com")]
 		[TestCase("http://example.com/", "http://example.com")]
+		[TestCase("http://example.com/path", "http://example.com")]
+		[TestCase("http://example.com", "http://example.com/path")]
 		public void Equals_FacetId(string facetId1, string facetId2)
 		{
 			Assert.IsTrue(new FidoFacetId(facetId1).Equals(new FidoFacetId(facetId2)));
-			Assert.IsTrue(new FidoFacetId(facetId1).Equals(facetId2));
-		}
-
-		[TestCase("http://example.com/path", "http://example.com")]
-		[TestCase("http://example.com", "http://example.com/path")]
-		public void NotEquals(string faceId1, string facetId2)
-		{
-			Assert.IsFalse(new FidoFacetId(faceId1).Equals(new FidoFacetId(facetId2)));
-			Assert.IsFalse(new FidoFacetId(faceId1).Equals(facetId2));
 		}
 
 		[Test]

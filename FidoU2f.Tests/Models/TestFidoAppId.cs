@@ -69,7 +69,6 @@ namespace FidoU2f.Tests.Models
 		public void Equals(string appId1, string appId2)
 		{
 			Assert.IsTrue(new FidoAppId(appId1).Equals(new FidoAppId(appId2)));
-			Assert.IsTrue(new FidoAppId(appId1).Equals(appId2));
 			Assert.IsTrue(new FidoAppId(appId1).Equals(new FidoFacetId(appId2)));
 		}
 
