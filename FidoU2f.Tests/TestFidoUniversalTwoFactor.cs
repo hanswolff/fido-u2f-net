@@ -106,14 +106,17 @@ namespace FidoU2f.Tests
 			Assert.Throws<InvalidOperationException>(() => fido.FinishRegistration(startedRegistration, registerResponse, TestVectors.TrustedDomains));
 		}
 
-		[Test]
-		public void FinishRegistration_UntrustedOrigin_Throws()
+		[TestCase("http://not.trusted")]
+		[TestCase("http://example.com:81")]
+		[TestCase("http://www.example.com")]
+		[TestCase("https://example.com")]
+		public void FinishRegistration_UntrustedOrigin_Throws(string origin)
 		{
 			var fido = new FidoUniversalTwoFactor();
 			var startedRegistration = fido.StartRegistration(TestVectors.AppIdEnroll);
 
 			var registerResponse = GetValidRegisterResponse();
-			registerResponse.ClientData.Origin = "http://not.trusted";
+			registerResponse.ClientData.Origin = origin;
 
 			Assert.Throws<InvalidOperationException>(() => fido.FinishRegistration(startedRegistration, registerResponse, TestVectors.TrustedDomains));
 		}
@@ -199,8 +202,10 @@ namespace FidoU2f.Tests
 			Assert.Throws<InvalidOperationException>(() => fido.FinishAuthentication(startedAuthentication, authenticateResponse, deviceRegistration, TestVectors.TrustedDomains));
 		}
 
-		[Test]
-		public void FinishAuthentication_TrustedOrigin()
+		[TestCase("http://example.com/subpath")]
+		[TestCase("http://example.com:80")]
+		[TestCase("http://example.com:80/subpath")]
+		public void FinishAuthentication_TrustedOrigin(string origin)
 		{
 			var mockGenerateChallenge = new Mock<IGenerateFidoChallenge>();
 			mockGenerateChallenge.Setup(x => x.GenerateChallenge()).Returns(WebSafeBase64Converter.FromBase64String(TestVectors.ServerChallengeAuthBase64));
@@ -210,7 +215,7 @@ namespace FidoU2f.Tests
 			var deviceRegistration = CreateTestDeviceRegistration();
 			var startedAuthentication = fido.StartAuthentication(new FidoAppId(TestVectors.AppIdEnroll), deviceRegistration);
 
-			var clientDataAuth = TestVectors.ClientDataAuth.Replace("origin\":\"http://example.com", "origin\":\"http://example.com/subpath");
+			var clientDataAuth = TestVectors.ClientDataAuth.Replace("origin\":\"http://example.com", "origin\":\"" + origin);
 
 			var authenticateResponse = new FidoAuthenticateResponse(
 				FidoClientData.FromJson(clientDataAuth),
@@ -220,8 +225,11 @@ namespace FidoU2f.Tests
 			fido.FinishAuthentication(startedAuthentication, authenticateResponse, deviceRegistration, TestVectors.TrustedDomains);
 		}
 
-		[Test]
-		public void FinishAuthentication_UntrustedOrigin()
+		[TestCase("http://not.trusted")]
+		[TestCase("http://example.com:81")]
+		[TestCase("http://www.example.com")]
+		[TestCase("https://example.com")]
+		public void FinishAuthentication_UntrustedOrigin(string origin)
 		{
 			var mockGenerateChallenge = new Mock<IGenerateFidoChallenge>();
 			mockGenerateChallenge.Setup(x => x.GenerateChallenge()).Returns(WebSafeBase64Converter.FromBase64String(TestVectors.ServerChallengeAuthBase64));
@@ -231,11 +239,89 @@ namespace FidoU2f.Tests
 			var deviceRegistration = CreateTestDeviceRegistration();
 			var startedAuthentication = fido.StartAuthentication(new FidoAppId(TestVectors.AppIdEnroll), deviceRegistration);
 
-			var clientDataAuth = TestVectors.ClientDataAuth.Replace("origin\":\"http://example.com", "origin\":\"http://not.trusted");
+			var clientDataAuth = TestVectors.ClientDataAuth.Replace("origin\":\"http://example.com", "origin\":\"" + origin);
 
             var authenticateResponse = new FidoAuthenticateResponse(
 				FidoClientData.FromJson(clientDataAuth),
 				FidoSignatureData.FromWebBase64(TestVectors.SignResponseDataBase64),
+				FidoKeyHandle.FromWebSafeBase64(TestVectors.KeyHandle));
+
+			Assert.Throws<InvalidOperationException>(() => fido.FinishAuthentication(startedAuthentication, authenticateResponse, deviceRegistration, TestVectors.TrustedDomains));
+		}
+
+		[Test]
+		public void FinishAuthentication_CounterTooSmall()
+		{
+			var mockGenerateChallenge = new Mock<IGenerateFidoChallenge>();
+			mockGenerateChallenge.Setup(x => x.GenerateChallenge()).Returns(WebSafeBase64Converter.FromBase64String(TestVectors.ServerChallengeAuthBase64));
+
+			var fido = new FidoUniversalTwoFactor(mockGenerateChallenge.Object);
+
+			var deviceRegistration = CreateTestDeviceRegistration();
+			var startedAuthentication = fido.StartAuthentication(new FidoAppId(TestVectors.AppIdEnroll), deviceRegistration);
+
+			var signatureData = FidoSignatureData.FromWebBase64(TestVectors.SignResponseDataBase64);
+			signatureData = new FidoSignatureData(
+				signatureData.UserPresence,
+				0,
+				signatureData.Signature);
+
+			var authenticateResponse = new FidoAuthenticateResponse(
+				FidoClientData.FromJson(TestVectors.ClientDataAuth),
+				signatureData,
+				FidoKeyHandle.FromWebSafeBase64(TestVectors.KeyHandle));
+
+			Assert.Throws<InvalidOperationException>(() => fido.FinishAuthentication(startedAuthentication, authenticateResponse, deviceRegistration, TestVectors.TrustedDomains));
+		}
+
+		[Test]
+		public void FinishAuthentication_UserPresenceNotSet()
+		{
+			var mockGenerateChallenge = new Mock<IGenerateFidoChallenge>();
+			mockGenerateChallenge.Setup(x => x.GenerateChallenge()).Returns(WebSafeBase64Converter.FromBase64String(TestVectors.ServerChallengeAuthBase64));
+
+			var fido = new FidoUniversalTwoFactor(mockGenerateChallenge.Object);
+
+			var deviceRegistration = CreateTestDeviceRegistration();
+			var startedAuthentication = fido.StartAuthentication(new FidoAppId(TestVectors.AppIdEnroll), deviceRegistration);
+
+			var signatureData = FidoSignatureData.FromWebBase64(TestVectors.SignResponseDataBase64);
+			signatureData = new FidoSignatureData(
+				0,
+				signatureData.Counter,
+				signatureData.Signature);
+
+			var authenticateResponse = new FidoAuthenticateResponse(
+				FidoClientData.FromJson(TestVectors.ClientDataAuth),
+				signatureData,
+				FidoKeyHandle.FromWebSafeBase64(TestVectors.KeyHandle));
+
+			Assert.Throws<InvalidOperationException>(() => fido.FinishAuthentication(startedAuthentication, authenticateResponse, deviceRegistration, TestVectors.TrustedDomains));
+		}
+
+		[Test]
+		public void FinishAuthentication_InvalidSignatureData()
+		{
+			var mockGenerateChallenge = new Mock<IGenerateFidoChallenge>();
+			mockGenerateChallenge.Setup(x => x.GenerateChallenge()).Returns(WebSafeBase64Converter.FromBase64String(TestVectors.ServerChallengeAuthBase64));
+
+			var fido = new FidoUniversalTwoFactor(mockGenerateChallenge.Object);
+
+			var deviceRegistration = CreateTestDeviceRegistration();
+			var startedAuthentication = fido.StartAuthentication(new FidoAppId(TestVectors.AppIdEnroll), deviceRegistration);
+
+			var signatureData = FidoSignatureData.FromWebBase64(TestVectors.SignResponseDataBase64);
+			var signatureBytes = signatureData.Signature.ToByteArray();
+			signatureBytes[0] ^= 0xFF;
+
+			signatureData = new FidoSignatureData(
+				signatureData.UserPresence,
+				signatureData.Counter,
+				new FidoSignature(signatureBytes));
+
+			var authenticateResponse = new FidoAuthenticateResponse(
+				FidoClientData.FromJson(TestVectors.ClientDataAuth),
+				signatureData,
 				FidoKeyHandle.FromWebSafeBase64(TestVectors.KeyHandle));
 
 			Assert.Throws<InvalidOperationException>(() => fido.FinishAuthentication(startedAuthentication, authenticateResponse, deviceRegistration, TestVectors.TrustedDomains));

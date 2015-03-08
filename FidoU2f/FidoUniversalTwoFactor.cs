@@ -249,7 +249,7 @@ namespace FidoU2f
 				if (signer.VerifySignature(signature.ToByteArray()))
 					throw new InvalidOperationException("Invalid signature");
 			}
-			catch (Exception)
+			catch
 			{
 				throw new InvalidOperationException("Invalid signature");
 			}

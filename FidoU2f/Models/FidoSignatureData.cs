@@ -34,7 +34,7 @@ namespace FidoU2f.Models
 
 		public FidoSignature Signature { get; private set; }
 
-		private FidoSignatureData(byte userPresence, uint counter, FidoSignature signature)
+		public FidoSignatureData(byte userPresence, uint counter, FidoSignature signature)
 		{
 			UserPresence = userPresence;
 			Counter = counter;
