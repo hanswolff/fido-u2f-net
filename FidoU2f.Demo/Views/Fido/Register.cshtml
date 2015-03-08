@@ -1,0 +1,80 @@
+﻿@model FidoU2f.Demo.Models.RegisterNewDeviceViewModel
+@{
+	ViewBag.Title = "Register New Device";
+}
+
+@section scripts {
+	@Scripts.Render("~/bundles/bowser")
+	<script src="chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js"></script>
+	<script type="text/javascript">
+		$(function () {
+			if (window.u2f === undefined) {
+				$(".app_hide").show();
+				if (!bowser.chrome) { // for this to work include 'bowser.min.js'
+					$('.not_chrome').show();
+					$('.chrome').hide();
+				}
+			}
+		});
+
+		$(function () {
+			var request = { "challenge": "@Model.Challenge", "version": "U2F_V2", "appId": "@Model.AppId" };
+			$("#promptModal").modal("show");
+			u2f.register([request], [], function (data) {
+				console.log("Register callback", data);
+				$('#promptModal').modal('hide');
+				$('#showresponse').text(JSON.stringify(data));
+				$(@Html.IdFor(x => x.RawRegisterResponse)).val(JSON.stringify(data));
+				$('#form').submit();
+			});
+		});
+	</script>
+}
+
+<h2>@ViewBag.Title</h2>
+
+@using (Html.BeginForm("Register", "Fido", FormMethod.Post, new { id = "form"}))
+{
+	@Html.HiddenFor(x => x.AppId)
+	@Html.HiddenFor(x => x.Challenge)
+	@Html.HiddenFor(x => x.RawRegisterResponse)
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="alert alert-info">
+				<p>
+					You may be prompted to allow the site permission to access your security keys. After granting permission, the device will start to blink.
+					Please touch the flashing U2F device. Some devices that come without a button need to be plugged into the USB port.
+				</p>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-12">
+			<strong>U2F enroll data: </strong><pre>{"challenge": "@Model.Challenge", "version": "U2F_V2", "appId": "@Model.AppId"}</pre>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-lg-12">
+			<strong>U2F response data: </strong>
+		</div>
+		<div class="col-lg-12">
+			<pre id="showresponse"></pre>
+		</div>
+	</div>
+}
+
+<div id="app_alert" class="app_hide alert alert-danger" style="display: none;">
+	<p>This demo requires the Google U2F Extension for Chrome!</p>
+	<div class="not_chrome" style="display: none;">
+		<p><strong>Your current browser is not yet supported.</strong></p>
+		<a class="btn" href="https://www.google.com/chrome/browser/">Get Chrome</a>
+	</div>
+	<div class="chrome">
+		<a class="btn" href="https://chrome.google.com/webstore/detail/fido-u2f-universal-2nd-fa/pfboblefjcgdjicmnffhdgionmgcdmne">Download here</a>
+	</div>
+</div>
+
+<br />
+
+@Html.ActionLink("Complete Registration", "Register", null, new { @class = "btn btn-default" })

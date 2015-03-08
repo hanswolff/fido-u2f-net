@@ -1,0 +1,42 @@
+﻿@model FidoU2f.Demo.Models.RegistrationsViewModel
+@{
+	ViewBag.Title = "Registrations";
+}
+
+<h2>Unfinished Registrations</h2>
+
+<table class="table">
+	<tr>
+		<th>AppId</th>
+		<th>Challenge</th>
+	</tr>
+	@foreach (var startedRegistration in Model.StartedRegistrations)
+	{
+		<tr>
+			<td>@startedRegistration.AppId</td>
+			<td>@startedRegistration.Challenge</td>
+		</tr>
+	}
+</table>
+
+<br />
+
+<h2>Completed Registrations</h2>
+
+<table class="table">
+	<tr>
+		<th>Counter</th>
+		<th>KeyHandle</th>
+	</tr>
+	@foreach (var deviceRegistration in Model.DeviceRegistrations)
+	{
+		<tr>
+			<td>@deviceRegistration.Counter</td>
+			<td>@deviceRegistration.KeyHandle</td>
+		</tr>
+	}
+</table>
+
+<br />
+
+@Html.ActionLink("Register New Device", "Register", null, new { @class = "btn btn-success btn-default" })
