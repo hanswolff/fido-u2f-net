@@ -22,11 +22,12 @@
 // SOFTWARE.
 
 using System;
+using System.Linq;
 using Org.BouncyCastle.X509;
 
 namespace FidoU2f.Models
 {
-	public class FidoAttestationCertificate
+	public class FidoAttestationCertificate : IEquatable<FidoAttestationCertificate>
 	{
 		public byte[] RawData { get; private set; }
 		public X509Certificate Certificate { get; private set; }
@@ -44,6 +45,12 @@ namespace FidoU2f.Models
 			if (attestationCertificate == null) throw new ArgumentNullException("attestationCertificate");
 
 			return new FidoAttestationCertificate(WebSafeBase64Converter.FromBase64String(attestationCertificate));
+		}
+
+		public bool Equals(FidoAttestationCertificate other)
+		{
+			if (other == null) return false;
+			return RawData.SequenceEqual(other.RawData);
 		}
 
 		public string ToWebSafeBase64()

@@ -21,45 +21,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
-using Newtonsoft.Json;
-
 namespace FidoU2f.Models
 {
-	public class FidoRegisterResponse : IValidate
+	public interface IValidate
 	{
-		[JsonProperty("RegistrationData")]
-		public string RegistrationDataBase64 { get; set; }
-
-		[JsonIgnore]
-		public FidoRegistrationData RegistrationData
-		{
-			get { return FidoRegistrationData.FromString(RegistrationDataBase64); }
-		}
-
-		public FidoClientData ClientData { get; set; }
-
-		public FidoRegisterResponse()
-		{
-			ClientData = new FidoClientData();
-		}
-
-		public static FidoRegisterResponse FromJson(string json)
-		{
-			return JsonConvert.DeserializeObject<FidoRegisterResponse>(json);
-		}
-
-		public void Validate()
-		{
-			if (String.IsNullOrEmpty(RegistrationDataBase64))
-				throw new InvalidOperationException("Registration data is missing in registration response");
-
-			ClientData.Validate();
-		}
-
-		public string ToJson()
-		{
-			return JsonConvert.SerializeObject(this);
-		}
+		void Validate();
 	}
 }

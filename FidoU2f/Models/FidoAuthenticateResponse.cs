@@ -26,7 +26,7 @@ using Newtonsoft.Json;
 
 namespace FidoU2f.Models
 {
-	public class FidoAuthenticateResponse
+	public class FidoAuthenticateResponse : IValidate
 	{
 		[JsonProperty("ClientData")]
 		public string ClientDataJson { get; set; }

@@ -22,12 +22,12 @@
 // SOFTWARE.
 
 using System;
-using System.Text;
 using Newtonsoft.Json;
 
 namespace FidoU2f.Models
 {
-	public class FidoDeviceRegistration
+	[JsonConverter(typeof(FidoDeviceRegistrationSerializer))]
+	public class FidoDeviceRegistration : IEquatable<FidoDeviceRegistration>
 	{
 		public FidoKeyHandle KeyHandle { get; private set; }
 
@@ -58,10 +58,26 @@ namespace FidoU2f.Models
 			Counter = clientCounter;
 		}
 
+		public static FidoDeviceRegistration Deserialize(string serializedObject)
+		{
+			return JsonConvert.DeserializeObject<FidoDeviceRegistration>(serializedObject);
+		}
+
 		public string Serialize()
 		{
 			var json = JsonConvert.SerializeObject(this);
-			return WebSafeBase64Converter.ToBase64String(Encoding.UTF8.GetBytes(json));
+			return json;
+		}
+
+		public bool Equals(FidoDeviceRegistration other)
+		{
+			if (other == null) return false;
+
+			return
+				Counter == other.Counter &&
+				Certificate.Equals(other.Certificate) &&
+				KeyHandle.Equals(other.KeyHandle) &&
+				PublicKey.Equals(other.PublicKey);
 		}
 	}
 }

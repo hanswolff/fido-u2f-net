@@ -59,6 +59,7 @@
     <Compile Include="Models\TestFidoFacetId.cs" />
     <Compile Include="Models\TestFidoAppId.cs" />
     <Compile Include="Models\TestFidoClientData.cs" />
+    <Compile Include="Models\TestFidoDeviceRegistration.cs" />
     <Compile Include="Models\TestFidoSignature.cs" />
     <Compile Include="Models\TestFidoPublicKey.cs" />
     <Compile Include="Models\TestFidoKeyHandle.cs" />

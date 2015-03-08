@@ -27,7 +27,7 @@ using Newtonsoft.Json.Linq;
 
 namespace FidoU2f.Models
 {
-	public class FidoClientData
+	public class FidoClientData : IValidate
 	{
 		[JsonProperty("typ")]
 		public string Type { get; set; }
