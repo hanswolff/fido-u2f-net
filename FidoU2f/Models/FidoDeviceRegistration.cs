@@ -22,6 +22,8 @@
 // SOFTWARE.
 
 using System;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace FidoU2f.Models
 {
@@ -54,6 +56,12 @@ namespace FidoU2f.Models
 				throw new InvalidOperationException("Counter value too small!");
 			}
 			Counter = clientCounter;
+		}
+
+		public string Serialize()
+		{
+			var json = JsonConvert.SerializeObject(this);
+			return WebSafeBase64Converter.ToBase64String(Encoding.UTF8.GetBytes(json));
 		}
 	}
 }

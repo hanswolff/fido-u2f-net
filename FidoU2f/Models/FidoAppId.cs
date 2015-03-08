@@ -58,9 +58,6 @@ namespace FidoU2f.Models
 			var scheme = uri.Scheme.ToLowerInvariant();
 			if (scheme != "http" && scheme != "https")
 				ThrowFormatException();
-
-			if (!String.IsNullOrEmpty(uri.AbsolutePath.Trim('/')))
-				ThrowFormatException();
 		}
 
 		private static void ThrowFormatException()

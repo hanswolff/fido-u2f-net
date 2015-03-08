@@ -34,6 +34,7 @@ namespace FidoU2f.Tests.Models
 		[TestCase("http://localhost/")]
 		[TestCase("http://localhost:12345")]
 		[TestCase("http://localhost:12345/")]
+		[TestCase("http://localhost/somepath")]
 		[TestCase("https://www.website.com")]
 		[TestCase("https://www.website.com///")]
 		public void Constructor_WellFormattedAppIds(string appId)
@@ -43,7 +44,6 @@ namespace FidoU2f.Tests.Models
 
 		[TestCase("ftp://localhost")]
 		[TestCase("http://localhost:9999999")]
-		[TestCase("http://localhost/somepath")]
 		[TestCase("/path")]
 		public void Constructor_IncorrectlyFormattedFacetIds(string appId)
 		{
@@ -51,7 +51,6 @@ namespace FidoU2f.Tests.Models
 		}
 
 		[TestCase("ftp://localhost")]
-		[TestCase("http://localhost/somepath")]
 		[TestCase("/path")]
 		public void Constructor_IncorrectUri(string appId)
 		{

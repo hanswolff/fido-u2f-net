@@ -81,16 +81,6 @@ namespace FidoU2f.Tests
 			Assert.AreEqual(deviceRegistration.KeyHandle, registrationData.KeyHandle);
 		}
 
-		private static FidoRegisterResponse GetValidRegisterResponse()
-		{
-			var registerResponse = new FidoRegisterResponse
-			{
-				RegistrationDataBase64 = TestVectors.RegistrationResponseDataBase64,
-				ClientData = FidoClientData.FromJson(TestVectors.ClientDataRegister)
-			};
-			return registerResponse;
-		}
-
 		[Test]
 		public void FinishRegistration_IncorrectType_Throws()
 		{
@@ -127,5 +117,61 @@ namespace FidoU2f.Tests
 
 			Assert.Throws<InvalidOperationException>(() => fido.FinishRegistration(startedRegistration, registerResponse, TestVectors.TrustedDomains));
 		}
-    }
+
+		[Test]
+		public void StartAuthentication()
+		{
+			var randomChallenge = Encoding.Default.GetBytes("random challenge");
+
+			var mockGenerateChallenge = new Mock<IGenerateFidoChallenge>();
+			mockGenerateChallenge.Setup(x => x.GenerateChallenge()).Returns(randomChallenge);
+
+			var fido = new FidoUniversalTwoFactor(mockGenerateChallenge.Object);
+
+			var deviceRegistration = CreateTestDeviceRegistration();
+			var startedAuthentication = fido.StartAuthentication(new FidoAppId(TestVectors.AppIdEnroll), deviceRegistration);
+
+			mockGenerateChallenge.Verify(x => x.GenerateChallenge(), Times.Once);
+
+			Assert.AreEqual(TestVectors.AppIdEnroll, startedAuthentication.AppId.ToString());
+			Assert.AreEqual(randomChallenge, WebSafeBase64Converter.FromBase64String(startedAuthentication.Challenge));
+		}
+
+		[Test]
+		public void FinishAuthentication_Works()
+		{
+			var mockGenerateChallenge = new Mock<IGenerateFidoChallenge>();
+			mockGenerateChallenge.Setup(x => x.GenerateChallenge()).Returns(WebSafeBase64Converter.FromBase64String(TestVectors.ServerChallengeAuthBase64));
+
+			var fido = new FidoUniversalTwoFactor(mockGenerateChallenge.Object);
+
+			var deviceRegistration = CreateTestDeviceRegistration();
+			var startedAuthentication = fido.StartAuthentication(new FidoAppId(TestVectors.AppIdEnroll), deviceRegistration);
+
+			var authenticateResponse = new FidoAuthenticateResponse(
+				FidoClientData.FromJson(TestVectors.ClientDataAuth),
+				FidoSignatureData.FromWebBase64(TestVectors.SignResponseDataBase64),
+				FidoKeyHandle.FromWebSafeBase64(TestVectors.KeyHandle));
+
+			fido.FinishAuthentication(startedAuthentication, authenticateResponse, deviceRegistration, TestVectors.TrustedDomains);
+		}
+
+		private static FidoRegisterResponse GetValidRegisterResponse()
+		{
+			var registerResponse = new FidoRegisterResponse
+			{
+				RegistrationDataBase64 = TestVectors.RegistrationResponseDataBase64,
+				ClientData = FidoClientData.FromJson(TestVectors.ClientDataRegister)
+			};
+			return registerResponse;
+		}
+
+		private static FidoDeviceRegistration CreateTestDeviceRegistration()
+		{
+			var cert = FidoAttestationCertificate.FromWebSafeBase64(TestVectors.AttestationCertificate);
+			var keyHandle = FidoKeyHandle.FromWebSafeBase64(TestVectors.KeyHandle);
+			var publicKey = FidoPublicKey.FromWebSafeBase64(TestVectors.PublicKey);
+			return new FidoDeviceRegistration(keyHandle, publicKey, cert, 1);
+		}
+	}
 }

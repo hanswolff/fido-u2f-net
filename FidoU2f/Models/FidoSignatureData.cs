@@ -41,7 +41,7 @@ namespace FidoU2f.Models
 			Signature = signature;
 		}
 
-		public static FidoSignatureData FromString(string webSafeBase64)
+		public static FidoSignatureData FromWebBase64(string webSafeBase64)
 		{
 			return FromBytes(WebSafeBase64Converter.FromBase64String(webSafeBase64));
 		}

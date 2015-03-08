@@ -21,6 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System.Text;
 using Newtonsoft.Json;
 
 namespace FidoU2f.Models
@@ -45,7 +46,7 @@ namespace FidoU2f.Models
 		[JsonIgnore]
 		public FidoSignatureData SignatureData
 		{
-			get { return FidoSignatureData.FromString(SignatureDataBase64); }
+			get { return FidoSignatureData.FromWebBase64(SignatureDataBase64); }
 		}
 
 		[JsonIgnore]
@@ -57,6 +58,17 @@ namespace FidoU2f.Models
 		public static FidoAuthenticateResponse FromJson(string json)
 		{
 			return JsonConvert.DeserializeObject<FidoAuthenticateResponse>(json);
+		}
+
+		public FidoAuthenticateResponse()
+		{
+		}
+
+		public FidoAuthenticateResponse(FidoClientData clientData, FidoSignatureData signature, FidoKeyHandle keyHandle)
+		{
+			ClientDataJson = JsonConvert.SerializeObject(clientData);
+			SignatureDataBase64 = WebSafeBase64Converter.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(signature)));
+			KeyHandleBase64 = keyHandle.ToWebSafeBase64();
 		}
 
 		public void Validate()
