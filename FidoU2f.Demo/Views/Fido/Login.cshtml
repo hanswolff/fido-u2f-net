@@ -1,6 +1,6 @@
-﻿@model FidoU2f.Demo.Models.RegisterNewDeviceViewModel
+﻿@model FidoU2f.Demo.Models.LoginDeviceViewModel
 @{
-	ViewBag.Title = "Register New Device";
+	ViewBag.Title = "Login";
 }
 
 @section scripts {
@@ -18,11 +18,11 @@
 		});
 
 		$(function () {
-			var request = { "challenge": "@Model.Challenge", "version": "U2F_V2", "appId": "@Model.AppId" };
-			u2f.register([request], [], function (data) {
-				console.log("Register callback", data);
+			var request = { "challenge": "@Model.Challenge", "version": "U2F_V2", "keyHandle": "@Model.KeyHandle", "appId": "@Model.AppId" };
+			u2f.sign([request], function (data) {
 				$('#showresponse').text(JSON.stringify(data));
-				$(@Html.IdFor(x => x.RawRegisterResponse)).val(JSON.stringify(data));
+				$('#verify-data').val(JSON.stringify(data));
+				$(@Html.IdFor(x => x.RawAuthenticationResponse)).val(JSON.stringify(data));
 				$('#form').submit();
 			});
 		});
@@ -31,11 +31,12 @@
 
 <h2>@ViewBag.Title</h2>
 
-@using (Html.BeginForm("Register", "Fido", FormMethod.Post, new { id = "form"}))
+@using (Html.BeginForm("Login", "Fido", FormMethod.Post, new { id = "form" }))
 {
 	@Html.HiddenFor(x => x.AppId)
 	@Html.HiddenFor(x => x.Challenge)
-	@Html.HiddenFor(x => x.RawRegisterResponse)
+	@Html.HiddenFor(x => x.KeyHandle)
+	@Html.HiddenFor(x => x.RawAuthenticationResponse)
 
 	if (!ViewData.ModelState.IsValid)
 	{
@@ -61,7 +62,7 @@
 
 	<div class="row">
 		<div class="col-lg-12">
-			<strong>U2F enroll data: </strong><pre>{"challenge": "@Model.Challenge", "version": "U2F_V2", "appId": "@Model.AppId"}</pre>
+			<strong>U2F KeyHandle: </strong><pre>{ "challenge": "@Model.Challenge", "version": "U2F_V2", "keyHandle": "@Model.KeyHandle", "appId": "@Model.AppId" }</pre>
 		</div>
 	</div>
 	<div class="row">
@@ -86,5 +87,3 @@
 </div>
 
 <br />
-
-@Html.ActionLink("Complete Registration", "Register", null, new { @class = "btn btn-default" })

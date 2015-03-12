@@ -32,71 +32,149 @@ namespace FidoU2f.Demo.Controllers
 {
     public class FidoController : Controller
     {
-		private static IFidoRepository _fidoRepository;
+        private static IFidoRepository _fidoRepository;
 
-	    public static string GetCurrentUser()
-	    {
-			return ""; // users are ignored in this implementation
-	    }
+        public static string GetCurrentUser()
+        {
+            return ""; // users are ignored in this implementation
+        }
 
-	    public static IFidoRepository GetFidoRepository()
-	    {
-		    return _fidoRepository ?? (_fidoRepository = new InMemoryFidoRepository());
-	    }
+        public static IFidoRepository GetFidoRepository()
+        {
+            return _fidoRepository ?? (_fidoRepository = new InMemoryFidoRepository());
+        }
 
         public ActionResult Index()
         {
-	        var model = new RegistrationsViewModel
-	        {
-				StartedRegistrations = GetFidoRepository().GetAllStartedRegistrationsOfUser(GetCurrentUser()).ToList(),
-				DeviceRegistrations = GetFidoRepository().GetDeviceRegistrationsOfUser(GetCurrentUser()).ToList()
-	        };
+            var model = new RegistrationsViewModel
+            {
+                StartedRegistrations = GetFidoRepository().GetAllStartedRegistrationsOfUser(GetCurrentUser()).ToList(),
+                DeviceRegistrations = GetFidoRepository().GetDeviceRegistrationsOfUser(GetCurrentUser()).ToList()
+            };
 
             return View(model);
         }
 
-		[HttpGet]
-		public ActionResult Register()
-		{
-			var u2f = new FidoUniversalTwoFactor();
-			var appId = new FidoAppId(Request.Url);
-			var startedRegistration = u2f.StartRegistration(appId);
+        [HttpGet]
+        public ActionResult Register()
+        {
+            var u2f = new FidoUniversalTwoFactor();
+            var appId = new FidoAppId(Request.Url);
+            var startedRegistration = u2f.StartRegistration(appId);
 
-			GetFidoRepository().StoreStartedRegistration(GetCurrentUser(), startedRegistration);
+            GetFidoRepository().StoreStartedRegistration(GetCurrentUser(), startedRegistration);
 
-			var model = new RegisterNewDeviceViewModel
-			{
-				AppId = startedRegistration.AppId.ToString(),
-				Challenge = startedRegistration.Challenge
-			};
+            var model = new RegisterNewDeviceViewModel
+            {
+                AppId = startedRegistration.AppId.ToString(),
+                Challenge = startedRegistration.Challenge,
+                UserName = GetCurrentUser()
+            };
 
-			return View(model);
-		}
+            return View(model);
+        }
 
-		[HttpPost]
-		public ActionResult Register(RegisterNewDeviceViewModel model)
-		{
-			if (!String.IsNullOrEmpty(model.RawRegisterResponse))
-			{
-				var u2f = new FidoUniversalTwoFactor();
-				var appId = new FidoAppId(Request.Url);
+        [HttpPost]
+        public ActionResult Register(RegisterNewDeviceViewModel model)
+        {
+            model = model ?? new RegisterNewDeviceViewModel();
 
-				var challenge = model.Challenge;
-				var startedRegistration = GetFidoRepository().GetStartedRegistration(GetCurrentUser(), challenge);
+            if (!String.IsNullOrEmpty(model.RawRegisterResponse))
+            {
+                var u2f = new FidoUniversalTwoFactor();
 
-				var deviceRegistration = u2f.FinishRegistration(startedRegistration, model.RawRegisterResponse, GetTrustedDomains());
-				GetFidoRepository().StoreDeviceRegistration(GetCurrentUser(), deviceRegistration);
-				GetFidoRepository().RemoveStartedRegistration(GetCurrentUser(), model.Challenge);
+                var challenge = model.Challenge;
+                var startedRegistration = GetFidoRepository().GetStartedRegistration(GetCurrentUser(), challenge);
 
-				return RedirectToAction("Index");
-			}
+                var deviceRegistration = u2f.FinishRegistration(startedRegistration, model.RawRegisterResponse, GetTrustedDomains());
+                GetFidoRepository().StoreDeviceRegistration(GetCurrentUser(), deviceRegistration);
+                GetFidoRepository().RemoveStartedRegistration(GetCurrentUser(), model.Challenge);
 
-			return View(model);
-		}
+                return RedirectToAction("Index");
+            }
 
-	    private FidoFacetId[] GetTrustedDomains()
-	    {
-		    return new[] { new FidoFacetId(Request.Url) };
-	    }
+            return View(model);
+        }
+
+        [HttpGet]
+        public ActionResult Login(string keyHandle)
+        {
+            var model = new LoginDeviceViewModel { KeyHandle = keyHandle };
+
+            try
+            {
+                var u2f = new FidoUniversalTwoFactor();
+                var appId = new FidoAppId(Request.Url);
+
+                var deviceRegistration = GetFidoRepository().GetDeviceRegistrationsOfUser(GetCurrentUser()).FirstOrDefault(x => x.KeyHandle.ToWebSafeBase64() == keyHandle);
+                if (deviceRegistration == null)
+                {
+                    ModelState.AddModelError("", "Unknown key handle: " + keyHandle);
+                    return View(model);
+                }
+
+                var startedRegistration = u2f.StartAuthentication(appId, deviceRegistration);
+
+                model = new LoginDeviceViewModel
+                {
+                    AppId = startedRegistration.AppId.ToString(),
+                    Challenge = startedRegistration.Challenge,
+                    KeyHandle = startedRegistration.KeyHandle.ToWebSafeBase64(),
+                    UserName = GetCurrentUser()
+                };
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.GetType().Name + ": " + ex.Message);
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public ActionResult Login(LoginDeviceViewModel model)
+        {
+            model = model ?? new LoginDeviceViewModel();
+
+            try
+            {
+                if (!String.IsNullOrEmpty(model.RawAuthenticationResponse))
+                {
+                    var u2f = new FidoUniversalTwoFactor();
+                    var appId = new FidoAppId(Request.Url);
+
+                    var deviceRegistration = GetFidoRepository().GetDeviceRegistrationsOfUser(GetCurrentUser()).FirstOrDefault(x => x.KeyHandle.ToWebSafeBase64() == model.KeyHandle);
+                    if (deviceRegistration == null)
+                    {
+                        ModelState.AddModelError("", "Unknown key handle: " + model.KeyHandle);
+                        return View(new LoginDeviceViewModel());
+                    }
+
+                    var challenge = model.Challenge;
+
+                    var startedAuthentication = new FidoStartedAuthentication(appId, challenge,
+                        FidoKeyHandle.FromWebSafeBase64(model.KeyHandle ?? ""));
+
+                    FidoAuthenticateResponse authResponse = null; // TODO: FidoAuthenticateResponse.FromJson(model.RawAuthenticationResponse);
+
+                    u2f.FinishAuthentication(startedAuthentication, authResponse, deviceRegistration, GetTrustedDomains());
+                    GetFidoRepository().StoreDeviceRegistration(GetCurrentUser(), deviceRegistration);
+                    GetFidoRepository().RemoveStartedRegistration(GetCurrentUser(), model.Challenge);
+
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.GetType().Name + ": " + ex.Message);
+            }
+
+            return View(model);
+        }
+
+        private FidoFacetId[] GetTrustedDomains()
+        {
+            return new[] { new FidoFacetId(Request.Url) };
+        }
     }
 }

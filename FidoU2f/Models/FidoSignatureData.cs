@@ -41,7 +41,7 @@ namespace FidoU2f.Models
 			Signature = signature;
 		}
 
-		public static FidoSignatureData FromWebBase64(string webSafeBase64)
+		public static FidoSignatureData FromWebSafeBase64(string webSafeBase64)
 		{
 			return FromBytes(WebSafeBase64Converter.FromBase64String(webSafeBase64));
 		}
@@ -74,6 +74,36 @@ namespace FidoU2f.Models
 					counter,
 					new FidoSignature(signatureBytes));
 			}
+		}
+
+		public byte[] ToBytes()
+		{
+			using (var mem = new MemoryStream())
+			{
+				ToStream(mem);
+				return mem.ToArray();
+			}
+		}
+
+		public void ToStream(Stream stream)
+		{
+			using (var binaryWriter = new BinaryWriter(stream))
+			{
+				binaryWriter.Write(UserPresence);
+				
+				var counterBytes = BitConverter.GetBytes(Counter);
+
+				if (BitConverter.IsLittleEndian)
+					Array.Reverse(counterBytes);
+
+				binaryWriter.Write(counterBytes);
+				binaryWriter.Write(Signature.ToByteArray());
+			}
+		}
+
+		public string ToWebSafeBase64()
+		{
+			return WebSafeBase64Converter.ToBase64String(ToBytes());
 		}
 	}
 }

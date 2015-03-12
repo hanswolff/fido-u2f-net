@@ -154,7 +154,7 @@ namespace FidoU2f.Tests
 
 			var authenticateResponse = new FidoAuthenticateResponse(
 				FidoClientData.FromJson(TestVectors.ClientDataAuth),
-				FidoSignatureData.FromWebBase64(TestVectors.SignResponseDataBase64),
+				FidoSignatureData.FromWebSafeBase64(TestVectors.SignResponseDataBase64),
 				FidoKeyHandle.FromWebSafeBase64(TestVectors.KeyHandle));
 
 			fido.FinishAuthentication(startedAuthentication, authenticateResponse, deviceRegistration, TestVectors.TrustedDomains);
@@ -175,7 +175,7 @@ namespace FidoU2f.Tests
 
 			var authenticateResponse = new FidoAuthenticateResponse(
 				FidoClientData.FromJson(clientDataAuth),
-				FidoSignatureData.FromWebBase64(TestVectors.SignResponseDataBase64),
+				FidoSignatureData.FromWebSafeBase64(TestVectors.SignResponseDataBase64),
 				FidoKeyHandle.FromWebSafeBase64(TestVectors.KeyHandle));
 
 			Assert.Throws<InvalidOperationException>(() => fido.FinishAuthentication(startedAuthentication, authenticateResponse, deviceRegistration, TestVectors.TrustedDomains));
@@ -196,7 +196,7 @@ namespace FidoU2f.Tests
 
 			var authenticateResponse = new FidoAuthenticateResponse(
 				FidoClientData.FromJson(clientDataAuth),
-				FidoSignatureData.FromWebBase64(TestVectors.SignResponseDataBase64),
+				FidoSignatureData.FromWebSafeBase64(TestVectors.SignResponseDataBase64),
 				FidoKeyHandle.FromWebSafeBase64(TestVectors.KeyHandle));
 
 			Assert.Throws<InvalidOperationException>(() => fido.FinishAuthentication(startedAuthentication, authenticateResponse, deviceRegistration, TestVectors.TrustedDomains));
@@ -219,7 +219,7 @@ namespace FidoU2f.Tests
 
 			var authenticateResponse = new FidoAuthenticateResponse(
 				FidoClientData.FromJson(clientDataAuth),
-				FidoSignatureData.FromWebBase64(TestVectors.SignResponseDataBase64),
+				FidoSignatureData.FromWebSafeBase64(TestVectors.SignResponseDataBase64),
 				FidoKeyHandle.FromWebSafeBase64(TestVectors.KeyHandle));
 
 			fido.FinishAuthentication(startedAuthentication, authenticateResponse, deviceRegistration, TestVectors.TrustedDomains);
@@ -243,7 +243,7 @@ namespace FidoU2f.Tests
 
             var authenticateResponse = new FidoAuthenticateResponse(
 				FidoClientData.FromJson(clientDataAuth),
-				FidoSignatureData.FromWebBase64(TestVectors.SignResponseDataBase64),
+				FidoSignatureData.FromWebSafeBase64(TestVectors.SignResponseDataBase64),
 				FidoKeyHandle.FromWebSafeBase64(TestVectors.KeyHandle));
 
 			Assert.Throws<InvalidOperationException>(() => fido.FinishAuthentication(startedAuthentication, authenticateResponse, deviceRegistration, TestVectors.TrustedDomains));
@@ -260,7 +260,7 @@ namespace FidoU2f.Tests
 			var deviceRegistration = CreateTestDeviceRegistration();
 			var startedAuthentication = fido.StartAuthentication(new FidoAppId(TestVectors.AppIdEnroll), deviceRegistration);
 
-			var signatureData = FidoSignatureData.FromWebBase64(TestVectors.SignResponseDataBase64);
+			var signatureData = FidoSignatureData.FromWebSafeBase64(TestVectors.SignResponseDataBase64);
 			signatureData = new FidoSignatureData(
 				signatureData.UserPresence,
 				0,
@@ -285,7 +285,7 @@ namespace FidoU2f.Tests
 			var deviceRegistration = CreateTestDeviceRegistration();
 			var startedAuthentication = fido.StartAuthentication(new FidoAppId(TestVectors.AppIdEnroll), deviceRegistration);
 
-			var signatureData = FidoSignatureData.FromWebBase64(TestVectors.SignResponseDataBase64);
+			var signatureData = FidoSignatureData.FromWebSafeBase64(TestVectors.SignResponseDataBase64);
 			signatureData = new FidoSignatureData(
 				0,
 				signatureData.Counter,
@@ -310,7 +310,7 @@ namespace FidoU2f.Tests
 			var deviceRegistration = CreateTestDeviceRegistration();
 			var startedAuthentication = fido.StartAuthentication(new FidoAppId(TestVectors.AppIdEnroll), deviceRegistration);
 
-			var signatureData = FidoSignatureData.FromWebBase64(TestVectors.SignResponseDataBase64);
+			var signatureData = FidoSignatureData.FromWebSafeBase64(TestVectors.SignResponseDataBase64);
 			var signatureBytes = signatureData.Signature.ToByteArray();
 			signatureBytes[0] ^= 0xFF;
 
