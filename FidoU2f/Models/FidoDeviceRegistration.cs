@@ -26,7 +26,6 @@ using Newtonsoft.Json;
 
 namespace FidoU2f.Models
 {
-	[JsonConverter(typeof(FidoDeviceRegistrationSerializer))]
 	public class FidoDeviceRegistration : IEquatable<FidoDeviceRegistration>
 	{
 		public FidoKeyHandle KeyHandle { get; private set; }
@@ -58,12 +57,12 @@ namespace FidoU2f.Models
 			Counter = clientCounter;
 		}
 
-		public static FidoDeviceRegistration Deserialize(string serializedObject)
+		public static FidoDeviceRegistration FromJson(string json)
 		{
-			return JsonConvert.DeserializeObject<FidoDeviceRegistration>(serializedObject);
+			return JsonConvert.DeserializeObject<FidoDeviceRegistration>(json);
 		}
 
-		public string Serialize()
+		public string ToJson()
 		{
 			var json = JsonConvert.SerializeObject(this);
 			return json;

@@ -70,6 +70,12 @@
     <Compile Include="Models\TestFidoRegisterResponse.cs" />
     <Compile Include="Models\TestFidoRegistrationData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serializers\TestFidoAttestationCertificateSerializer.cs" />
+    <Compile Include="Serializers\TestFidoKeyHandleSerializer.cs" />
+    <Compile Include="Serializers\TestFidoSignatureSerializer.cs" />
+    <Compile Include="Serializers\TestFidoPublicKeySerializer.cs" />
+    <Compile Include="Serializers\TestFidoFacetIdSerializer.cs" />
+    <Compile Include="Serializers\TestFidoAppIdSerializer.cs" />
     <Compile Include="TestVectors.cs" />
     <Compile Include="TestFidoUniversalTwoFactor.cs" />
     <Compile Include="TestWebSafeBase64Converter.cs" />
@@ -83,6 +89,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

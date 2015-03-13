@@ -155,13 +155,12 @@ namespace FidoU2f.Demo.Controllers
                     var startedAuthentication = new FidoStartedAuthentication(appId, challenge,
                         FidoKeyHandle.FromWebSafeBase64(model.KeyHandle ?? ""));
 
-                    FidoAuthenticateResponse authResponse = null; // TODO: FidoAuthenticateResponse.FromJson(model.RawAuthenticationResponse);
+                    var counter = u2f.FinishAuthentication(startedAuthentication, model.RawAuthenticationResponse, deviceRegistration, GetTrustedDomains());
 
-                    u2f.FinishAuthentication(startedAuthentication, authResponse, deviceRegistration, GetTrustedDomains());
-                    GetFidoRepository().StoreDeviceRegistration(GetCurrentUser(), deviceRegistration);
-                    GetFidoRepository().RemoveStartedRegistration(GetCurrentUser(), model.Challenge);
+                    // save the counter somewhere, the device registration of the next authentication should use this updated counter
+                    deviceRegistration.UpdateCounter(counter);
 
-                    return RedirectToAction("Index");
+                    return RedirectToAction("LoginSuccess");
                 }
             }
             catch (Exception ex)
@@ -170,6 +169,11 @@ namespace FidoU2f.Demo.Controllers
             }
 
             return View(model);
+        }
+
+        public ActionResult LoginSuccess()
+        {
+            return View();
         }
 
         private FidoFacetId[] GetTrustedDomains()

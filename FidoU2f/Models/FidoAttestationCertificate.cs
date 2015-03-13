@@ -23,10 +23,13 @@
 
 using System;
 using System.Linq;
+using FidoU2f.Serializers;
+using Newtonsoft.Json;
 using Org.BouncyCastle.X509;
 
 namespace FidoU2f.Models
 {
+    [JsonConverter(typeof(FidoAttestationCertificateConverter))]
 	public class FidoAttestationCertificate : IEquatable<FidoAttestationCertificate>
 	{
 		public byte[] RawData { get; private set; }

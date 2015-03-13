@@ -15,6 +15,8 @@ namespace FidoU2f.Demo.Services
 
 		void StoreDeviceRegistration(string userName, FidoDeviceRegistration deviceRegistration);
 
+	    void UpdateDeviceRegistrationCounter(string userName, FidoKeyHandle keyHandle, uint counter);
+
 		IEnumerable<FidoDeviceRegistration> GetDeviceRegistrationsOfUser(string userName);
 	}
 }

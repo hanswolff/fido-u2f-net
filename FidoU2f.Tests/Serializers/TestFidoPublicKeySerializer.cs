@@ -21,42 +21,42 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System.Linq;
+using System.Security.Cryptography;
+using FidoU2f.Models;
 using Newtonsoft.Json;
+using NUnit.Framework;
 
-namespace FidoU2f.Models
+namespace FidoU2f.Tests.Serializers
 {
-	public class FidoAuthenticateResponse : IValidate
-	{
-		public FidoClientData ClientData { get; set; }
-
-		public FidoSignatureData SignatureData { get; set; }
-
-		public FidoKeyHandle KeyHandle { get; set; }
-
-        public static FidoAuthenticateResponse FromJson(string json)
+    [TestFixture]
+    public class TestFidoPublicKeySerializer
+    {
+        [Test]
+        public void SerializeObject()
         {
-            return JsonConvert.DeserializeObject<FidoAuthenticateResponse>(json);
+            var randomBytes = new byte[256];
+            RandomNumberGenerator.Create().GetBytes(randomBytes);
+
+            var value = new FidoPublicKey(randomBytes);
+            var serialized = JsonConvert.SerializeObject(value);
+
+            var bytes = WebSafeBase64Converter.FromBase64String(serialized.Trim('"'));
+            Assert.IsTrue(randomBytes.SequenceEqual(bytes));
         }
 
-        public string ToJson()
+        [Test]
+        public void DeserializeObject()
         {
-            return JsonConvert.SerializeObject(this);
+            var publicKey = new byte[256];
+            RandomNumberGenerator.Create().GetBytes(publicKey);
+
+            var value = new FidoPublicKey(publicKey);
+            var serialized = JsonConvert.SerializeObject(value);
+
+            var deserialized = JsonConvert.DeserializeObject<FidoPublicKey>(serialized);
+
+            Assert.AreEqual(value, deserialized);
         }
-
-		public FidoAuthenticateResponse()
-		{
-		}
-
-		public FidoAuthenticateResponse(FidoClientData clientData, FidoSignatureData signatureData, FidoKeyHandle keyHandle)
-		{
-			ClientData = clientData;
-			SignatureData = signatureData;
-			KeyHandle = keyHandle;
-		}
-
-		public void Validate()
-		{
-			ClientData.Validate();
-		}
-	}
+    }
 }

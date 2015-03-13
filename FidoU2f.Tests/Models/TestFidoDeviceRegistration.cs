@@ -21,8 +21,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System.Linq;
 using System.Text;
 using FidoU2f.Models;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 namespace FidoU2f.Tests.Models
@@ -31,7 +33,7 @@ namespace FidoU2f.Tests.Models
 	public class TestFidoDeviceRegistration
 	{
 		[Test]
-		public void Serialize()
+		public void ToJson()
 		{
 			var keyHandle = new FidoKeyHandle(Encoding.Default.GetBytes("keyhandle"));
 			var publicKey = new FidoPublicKey(Encoding.Default.GetBytes("publickey"));
@@ -39,14 +41,21 @@ namespace FidoU2f.Tests.Models
 
 			var deviceRegistration = new FidoDeviceRegistration(keyHandle, publicKey, certificate, 12345);
 
-			var serialized = deviceRegistration.Serialize();
-			Assert.AreEqual("{\"Certificate\":\"Y2VydGlmaWNhdGU\",\"Counter\":12345,\"KeyHandle\":\"a2V5aGFuZGxl\",\"PublicKey\":\"cHVibGlja2V5\"}", serialized);
+            var serialized = deviceRegistration.ToJson();
+
+            var jsonObject = JObject.Parse(serialized);
+            var properties = jsonObject.Properties().ToLookup(x => x.Name.ToLowerInvariant(), x => x.Value.ToString());
+
+            Assert.AreEqual("Y2VydGlmaWNhdGU", properties["certificate"].Single());
+            Assert.AreEqual("12345", properties["counter"].Single());
+            Assert.AreEqual("a2V5aGFuZGxl", properties["keyhandle"].Single());
+            Assert.AreEqual("cHVibGlja2V5", properties["publickey"].Single());
 		}
 
 		[Test]
-		public void Deserialize()
+		public void FromJson()
 		{
-			var deviceRegistration = FidoDeviceRegistration.Deserialize("{\"Certificate\":\"Y2VydGlmaWNhdGU\",\"Counter\":12345,\"KeyHandle\":\"a2V5aGFuZGxl\",\"PublicKey\":\"cHVibGlja2V5\"}");
+			var deviceRegistration = FidoDeviceRegistration.FromJson("{\"Certificate\":\"Y2VydGlmaWNhdGU\",\"Counter\":12345,\"KeyHandle\":\"a2V5aGFuZGxl\",\"PublicKey\":\"cHVibGlja2V5\"}");
 
 			var keyHandle = new FidoKeyHandle(Encoding.Default.GetBytes("keyhandle"));
 			var publicKey = new FidoPublicKey(Encoding.Default.GetBytes("publickey"));

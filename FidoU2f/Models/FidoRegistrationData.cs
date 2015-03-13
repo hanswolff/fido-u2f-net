@@ -23,9 +23,12 @@
 
 using System;
 using System.IO;
+using FidoU2f.Serializers;
+using Newtonsoft.Json;
 
 namespace FidoU2f.Models
 {
+    [JsonConverter(typeof(FidoRegistrationDataConverter))]
 	public class FidoRegistrationData
 	{
 		private const byte RegistrationReservedByte = 0x05;
@@ -33,19 +36,23 @@ namespace FidoU2f.Models
 		/// <summary>
 		/// The (uncompressed) x,y-representation of a curve point on the P-256 NIST elliptic curve.
 		/// </summary>
-		public FidoPublicKey UserPublicKey { get; private set; }
+		public FidoPublicKey UserPublicKey { get; set; }
 
 		/// <summary>
 		/// A handle that allows the U2F token to identify the generated key pair.
 		/// </summary>
-		public FidoKeyHandle KeyHandle { get; private set; }
+		public FidoKeyHandle KeyHandle { get; set; }
 
-		public FidoAttestationCertificate AttestationCertificate { get; private set; }
+		public FidoAttestationCertificate AttestationCertificate { get; set; }
 
 		/// <summary>
 		/// A ECDSA signature (on P-256)
 		/// </summary>
-		public FidoSignature Signature { get; private set; }
+		public FidoSignature Signature { get; set; }
+
+	    public FidoRegistrationData()
+	    {
+	    }
 
 		private FidoRegistrationData(FidoPublicKey userPublicKey, FidoKeyHandle keyHandle,
 						   FidoAttestationCertificate attestationCertificate,
@@ -86,7 +93,8 @@ namespace FidoU2f.Models
 				try
 				{
 					var publicKeyBytes = binaryReader.ReadBytes(65);
-					var keyHandleBytes = binaryReader.ReadBytes(binaryReader.ReadByte());
+				    var keyHandleLength = binaryReader.ReadByte();
+				    var keyHandleBytes = binaryReader.ReadBytes(keyHandleLength);
 
 					var nextChunkSize = (int)(binaryReader.BaseStream.Length - binaryReader.BaseStream.Position);
 					var certificatePosition = binaryReader.BaseStream.Position;
@@ -114,5 +122,53 @@ namespace FidoU2f.Models
 				}
 			}
 		}
-	}
+
+        public string ToWebSafeBase64()
+        {
+            return WebSafeBase64Converter.ToBase64String(ToBytes());
+        }
+
+        public byte[] ToBytes()
+        {
+            using (var mem = new MemoryStream())
+            {
+                ToStream(mem);
+                return mem.ToArray();
+            }
+        }
+
+        public void ToStream(Stream stream)
+	    {
+            using (var binaryWriter = new BinaryWriter(stream))
+            {
+                binaryWriter.Write(RegistrationReservedByte);
+
+                var publicKey = UserPublicKey.ToByteArray();
+                binaryWriter.Write(publicKey);
+                var keyHandle = KeyHandle.ToByteArray();
+                binaryWriter.Write((byte)keyHandle.Length);
+                binaryWriter.Write(keyHandle);
+
+                var certBytes = AttestationCertificate.Certificate.GetEncoded();
+                binaryWriter.Write(certBytes);
+
+                binaryWriter.Write(Signature.ToByteArray());
+            }
+        }
+
+        public void Validate()
+	    {
+            if (UserPublicKey == null)
+                throw new InvalidOperationException("UserPublicKey is missing in " + typeof(FidoRegistrationData).Name);
+
+            if (KeyHandle == null)
+                throw new InvalidOperationException("KeyHandle is missing in " + typeof(FidoRegistrationData).Name);
+
+            if (Signature == null)
+                throw new InvalidOperationException("Signature is missing in " + typeof(FidoRegistrationData).Name);
+
+            if (AttestationCertificate == null)
+                throw new InvalidOperationException("AttestationCertificate is missing in " + typeof(FidoRegistrationData).Name);
+        }
+    }
 }

@@ -52,14 +52,20 @@ namespace FidoU2f.Tests
 		[Test]
 		public void FinishRegistration_JsonRegisterResponse_Works()
 		{
-			var fido = new FidoUniversalTwoFactor();
+            var challenge = WebSafeBase64Converter.FromBase64String(TestVectors.ServerChallengeRegisterBase64);
+
+            var mockGenerateChallenge = new Mock<IGenerateFidoChallenge>();
+            mockGenerateChallenge.Setup(x => x.GenerateChallenge()).Returns(challenge);
+
+            var fido = new FidoUniversalTwoFactor();
 			var startedRegistration = fido.StartRegistration(TestVectors.AppIdEnroll);
 			startedRegistration.Challenge = TestVectors.ServerChallengeRegisterBase64;
 
 			var registerResponse = GetValidRegisterResponse();
 			var registrationData = registerResponse.RegistrationData;
 
-			var deviceRegistration = fido.FinishRegistration(startedRegistration, registerResponse.ToJson(), TestVectors.TrustedDomains);
+		    var jsonValue = registerResponse.ToJson();
+		    var deviceRegistration = fido.FinishRegistration(startedRegistration, jsonValue, TestVectors.TrustedDomains);
 			Assert.IsNotNull(deviceRegistration);
 			Assert.AreEqual(deviceRegistration.Certificate.RawData, registrationData.AttestationCertificate.RawData);
 			Assert.AreEqual(deviceRegistration.KeyHandle, registrationData.KeyHandle);
@@ -331,7 +337,7 @@ namespace FidoU2f.Tests
 		{
 			var registerResponse = new FidoRegisterResponse
 			{
-				RegistrationDataBase64 = TestVectors.RegistrationResponseDataBase64,
+				RegistrationData = FidoRegistrationData.FromWebSafeBase64(TestVectors.RegistrationResponseDataBase64),
 				ClientData = FidoClientData.FromJson(TestVectors.ClientDataRegister)
 			};
 			return registerResponse;

@@ -22,12 +22,15 @@
 // SOFTWARE.
 
 using System;
+using FidoU2f.Serializers;
+using Newtonsoft.Json;
 
 namespace FidoU2f.Models
 {
 	/// <summary>
 	/// FIDO FacetId (see section 3 in FIDO specification for valid FacetIds)
 	/// </summary>
+	[JsonConverter(typeof(FidoFacetIdConverter))]
 	public class FidoFacetId : IEquatable<FidoAppId>, IEquatable<FidoFacetId>
 	{
 		private readonly Uri _facetUri;

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>fidou2f</id>
+        <version>0.9.0</version>
+        <title>FIDO Universal 2nd Factor (U2F)</title>
+        <authors>Hans Wolff</authors>
+        <owners>Hans Wolff, FIDO Alliance</owners>
+        <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+        <projectUrl>https://github.com/hanswolff/fido-u2f-net</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>FIDO Universal 2nd Factor (U2F) library for .NET. Please have a look at the project page for examples.</description>
+        <summary>FIDO Universal 2nd Factor (U2F) library for .NET.</summary>
+        <releaseNotes>initial release</releaseNotes>
+		<copyright>Copyright 2015 © Hans Wolff</copyright>
+        <tags>FIDO, U2F, 2FA, 2Factor, Authentication</tags>
+		<dependencies>
+            <dependency id="Newtonsoft.Json" />
+			<dependency id="Portable.BouncyCastle" version="1.7.0.1" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="bin\FidoU2f\Release\FidoU2f.dll" target="lib\portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\FidoU2f.dll" />
+        <file src="bin\FidoU2f\Release\FidoU2f.pdb" target="lib\portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\FidoU2f.pdb" />
+    </files>
+</package>

@@ -28,50 +28,30 @@ namespace FidoU2f.Models
 {
 	public class FidoRegisterResponse : IValidate
 	{
-		[JsonProperty("registrationData")]
-		public string RegistrationDataBase64 { get; set; }
+		public FidoRegistrationData RegistrationData { get; set; }
 
-		[JsonProperty("clientData")]
-		public string ClientDataBase64 { get; set; }
-
-		private FidoRegistrationData _overrideRegistrationData;
-		[JsonIgnore]
-		public FidoRegistrationData RegistrationData
-		{
-			get { return _overrideRegistrationData ?? FidoRegistrationData.FromWebSafeBase64(RegistrationDataBase64); }
-			set { _overrideRegistrationData = value; }
-		}
-
-		private FidoClientData _overrideClientData;
-		[JsonIgnore]
-		public FidoClientData ClientData
-		{
-			get { return _overrideClientData ?? FidoClientData.FromWebSafeBase64(ClientDataBase64); }
-			set { _overrideClientData = value; }
-		}
+		public FidoClientData ClientData { get; set; }
 
 		public static FidoRegisterResponse FromJson(string json)
 		{
 			return JsonConvert.DeserializeObject<FidoRegisterResponse>(json);
 		}
 
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+
 		public void Validate()
 		{
-			if (String.IsNullOrEmpty(RegistrationDataBase64))
+			if (RegistrationData == null)
 				throw new InvalidOperationException("Registration data is missing in registration response");
 
-			ClientData.Validate();
-		}
+            if (ClientData == null)
+                throw new InvalidOperationException("Client data is missing in registration response");
 
-		public string ToJson()
-		{
-			if (_overrideRegistrationData != null)
-				RegistrationDataBase64 = JsonConvert.SerializeObject(_overrideRegistrationData);
-
-			if (_overrideClientData != null)
-				ClientDataBase64 = JsonConvert.SerializeObject(_overrideClientData);
-
-            return JsonConvert.SerializeObject(this);
+		    RegistrationData.Validate();
+            ClientData.Validate();
 		}
 	}
 }

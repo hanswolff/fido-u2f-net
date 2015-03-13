@@ -21,42 +21,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
+using FidoU2f.Models;
 using Newtonsoft.Json;
 
-namespace FidoU2f.Models
+namespace FidoU2f.Serializers
 {
-	public class FidoAuthenticateResponse : IValidate
+	public class FidoFacetIdConverter : JsonConverter
 	{
-		public FidoClientData ClientData { get; set; }
-
-		public FidoSignatureData SignatureData { get; set; }
-
-		public FidoKeyHandle KeyHandle { get; set; }
-
-        public static FidoAuthenticateResponse FromJson(string json)
-        {
-            return JsonConvert.DeserializeObject<FidoAuthenticateResponse>(json);
-        }
-
-        public string ToJson()
-        {
-            return JsonConvert.SerializeObject(this);
-        }
-
-		public FidoAuthenticateResponse()
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
+			serializer.Serialize(writer, value.ToString());
 		}
 
-		public FidoAuthenticateResponse(FidoClientData clientData, FidoSignatureData signatureData, FidoKeyHandle keyHandle)
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
-			ClientData = clientData;
-			SignatureData = signatureData;
-			KeyHandle = keyHandle;
+		    return new FidoFacetId(reader.Value.ToString());
 		}
 
-		public void Validate()
+	    public override bool CanConvert(Type objectType)
 		{
-			ClientData.Validate();
+			return typeof(FidoFacetId).IsAssignableFrom(objectType);
 		}
 	}
 }

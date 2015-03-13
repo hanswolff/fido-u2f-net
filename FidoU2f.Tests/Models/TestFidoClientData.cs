@@ -22,8 +22,11 @@
 // SOFTWARE.
 
 using System;
+using System.Linq;
 using System.Text;
 using FidoU2f.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 namespace FidoU2f.Tests.Models
@@ -31,7 +34,37 @@ namespace FidoU2f.Tests.Models
 	[TestFixture]
 	public class TestFidoClientData
 	{
-		[Test]
+        [Test]
+        public void Serialize()
+        {
+            var clientData = new FidoClientData
+            {
+                Challenge = "challenge",
+                Origin = "http://example.com",
+                Type = "sometype"
+            };
+
+            var serialized = clientData.ToJson();
+
+            var jsonObject = JObject.Parse(serialized);
+            var properties = jsonObject.Properties().ToLookup(x => x.Name.ToLowerInvariant(), x => x.Value.ToString());
+
+            Assert.AreEqual("challenge", properties["challenge"].Single());
+            Assert.AreEqual("http://example.com", properties["origin"].Single());
+            Assert.AreEqual("sometype", properties["typ"].Single());
+        }
+
+        [Test]
+        public void Deserialize()
+        {
+            var clientData = FidoClientData.FromJson("{\"challenge\":\"Y2VydGlmaWNhdGU\",\"origin\":\"http://example.com\",\"typ\":\"sometype\"}");
+
+            Assert.AreEqual("Y2VydGlmaWNhdGU", clientData.Challenge);
+            Assert.AreEqual("http://example.com", clientData.Origin);
+            Assert.AreEqual("sometype", clientData.Type);
+        }
+
+        [Test]
 		public void Validate_Wellformed_NoException()
 		{
 			var clientData = CreateGoodClientData();

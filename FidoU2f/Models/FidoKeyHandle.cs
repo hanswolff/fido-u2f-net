@@ -22,9 +22,12 @@
 // SOFTWARE.
 
 using System;
+using FidoU2f.Serializers;
+using Newtonsoft.Json;
 
 namespace FidoU2f.Models
 {
+    [JsonConverter(typeof(FidoKeyHandleConverter))]
 	public class FidoKeyHandle : IEquatable<FidoKeyHandle>
 	{
 		private readonly byte[] _bytes;

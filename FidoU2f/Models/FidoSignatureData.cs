@@ -23,16 +23,19 @@
 
 using System;
 using System.IO;
+using FidoU2f.Serializers;
+using Newtonsoft.Json;
 
 namespace FidoU2f.Models
 {
+    [JsonConverter(typeof(FidoSignatureDataConverter))]
 	public class FidoSignatureData
 	{
-		public byte UserPresence { get; }
+		public byte UserPresence { get; set; }
 
-		public uint Counter { get; }
+		public uint Counter { get; set; }
 
-		public FidoSignature Signature { get; private set; }
+		public FidoSignature Signature { get; set; }
 
 		public FidoSignatureData(byte userPresence, uint counter, FidoSignature signature)
 		{
@@ -76,7 +79,12 @@ namespace FidoU2f.Models
 			}
 		}
 
-		public byte[] ToBytes()
+        public string ToWebSafeBase64()
+        {
+            return WebSafeBase64Converter.ToBase64String(ToBytes());
+        }
+
+        public byte[] ToBytes()
 		{
 			using (var mem = new MemoryStream())
 			{
@@ -99,11 +107,6 @@ namespace FidoU2f.Models
 				binaryWriter.Write(counterBytes);
 				binaryWriter.Write(Signature.ToByteArray());
 			}
-		}
-
-		public string ToWebSafeBase64()
-		{
-			return WebSafeBase64Converter.ToBase64String(ToBytes());
 		}
 	}
 }

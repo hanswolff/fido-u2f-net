@@ -22,12 +22,15 @@
 // SOFTWARE.
 
 using System;
+using FidoU2f.Serializers;
+using Newtonsoft.Json;
 using Org.BouncyCastle.Asn1.Sec;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 
 namespace FidoU2f.Models
 {
+    [JsonConverter(typeof(FidoPublicKeyConverter))]
 	public class FidoPublicKey : IEquatable<FidoPublicKey>
 	{
 		private readonly byte[] _bytes;

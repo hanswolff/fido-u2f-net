@@ -22,12 +22,15 @@
 // SOFTWARE.
 
 using System;
+using System.IO;
 using System.Text;
+using FidoU2f.Serializers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace FidoU2f.Models
 {
+    [JsonConverter(typeof(FidoClientDataConverter))]
 	public class FidoClientData : IValidate
 	{
 		[JsonProperty("typ")]
@@ -79,16 +82,29 @@ namespace FidoU2f.Models
 			return clientData;
 		}
 
+	    public string ToWebSafeBase64()
+	    {
+	        return WebSafeBase64Converter.ToBase64String(ToJson());
+	    }
+
+	    public string ToJson()
+	    {
+            return "{\"challenge\":\"" +
+                (Challenge ?? "").Replace("\"", "\\\"") + "\",\"origin\":\"" +
+                (Origin ?? "").Replace("\"", "\\\"") + "\",\"typ\":\"" +
+                (Type ?? "").Replace("\"", "\\\"") + "\"}";
+	    }
+
 		public void Validate()
 		{
 			if (String.IsNullOrEmpty(Type))
-				throw new InvalidOperationException("Type is missing in client data");
+				throw new InvalidOperationException("'typ' is missing in client data");
 
 			if (String.IsNullOrEmpty(Challenge))
-				throw new InvalidOperationException("Challenge is missing in client data");
+				throw new InvalidOperationException("'challenge' is missing in client data");
 
 			if (String.IsNullOrEmpty(Origin))
-				throw new InvalidOperationException("Origin is missing in client data");
+				throw new InvalidOperationException("'origin' is missing in client data");
 		}
 	}
 }

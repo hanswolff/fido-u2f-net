@@ -21,42 +21,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using FidoU2f.Models;
 using Newtonsoft.Json;
+using NUnit.Framework;
 
-namespace FidoU2f.Models
+namespace FidoU2f.Tests.Serializers
 {
-	public class FidoAuthenticateResponse : IValidate
-	{
-		public FidoClientData ClientData { get; set; }
-
-		public FidoSignatureData SignatureData { get; set; }
-
-		public FidoKeyHandle KeyHandle { get; set; }
-
-        public static FidoAuthenticateResponse FromJson(string json)
+    [TestFixture]
+    public class TestFidoFacetIdSerializer
+    {
+        [Test]
+        public void SerializeObject()
         {
-            return JsonConvert.DeserializeObject<FidoAuthenticateResponse>(json);
+            var fidoFacetId = new FidoFacetId("http://example.com");
+            var serialized = JsonConvert.SerializeObject(fidoFacetId);
+
+            Assert.AreEqual("\"http://example.com\"", serialized);
         }
 
-        public string ToJson()
+        [Test]
+        public void DeserializeObject()
         {
-            return JsonConvert.SerializeObject(this);
+            var deserialized = JsonConvert.DeserializeObject<FidoFacetId>("\"http://example.com\"");
+
+            Assert.IsTrue(new FidoFacetId("http://example.com").Equals(deserialized));
         }
-
-		public FidoAuthenticateResponse()
-		{
-		}
-
-		public FidoAuthenticateResponse(FidoClientData clientData, FidoSignatureData signatureData, FidoKeyHandle keyHandle)
-		{
-			ClientData = clientData;
-			SignatureData = signatureData;
-			KeyHandle = keyHandle;
-		}
-
-		public void Validate()
-		{
-			ClientData.Validate();
-		}
-	}
+    }
 }

@@ -1,5 +1,7 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using FidoU2f.Models;
 
 namespace FidoU2f.Demo.Services
@@ -44,7 +46,16 @@ namespace FidoU2f.Demo.Services
 			DeviceRegistrations.Add(deviceRegistration);
 		}
 
-		public IEnumerable<FidoDeviceRegistration> GetDeviceRegistrationsOfUser(string userName)
+	    public void UpdateDeviceRegistrationCounter(string userName, FidoKeyHandle keyHandle, uint counter)
+	    {
+	        var deviceRegistration = GetDeviceRegistrationsOfUser(userName).FirstOrDefault(x => x.KeyHandle == keyHandle);
+            if (deviceRegistration == null)
+                throw new InvalidOperationException(String.Format("Could not find device registration for user '{0}' with key handle '{1}'", userName, keyHandle));
+
+	        deviceRegistration.UpdateCounter(counter);
+	    }
+
+	    public IEnumerable<FidoDeviceRegistration> GetDeviceRegistrationsOfUser(string userName)
 		{
 			return DeviceRegistrations;
 		}

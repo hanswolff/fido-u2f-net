@@ -185,7 +185,16 @@ namespace FidoU2f
 				deviceRegistration.KeyHandle);
 		}
 
-		public uint FinishAuthentication(FidoStartedAuthentication startedAuthentication,
+	    public uint FinishAuthentication(FidoStartedAuthentication startedAuthentication,
+	        string rawAuthResponse,
+	        FidoDeviceRegistration deviceRegistration,
+	        IEnumerable<FidoFacetId> trustedFacetIds)
+	    {
+	        var authResponse = FidoAuthenticateResponse.FromJson(rawAuthResponse);
+	        return FinishAuthentication(startedAuthentication, authResponse, deviceRegistration, trustedFacetIds);
+	    }
+
+	    public uint FinishAuthentication(FidoStartedAuthentication startedAuthentication,
 			FidoAuthenticateResponse authResponse,
 			FidoDeviceRegistration deviceRegistration,
 			IEnumerable<FidoFacetId> trustedFacetIds)

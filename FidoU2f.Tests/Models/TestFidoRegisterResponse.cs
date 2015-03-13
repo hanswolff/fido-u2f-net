@@ -30,6 +30,15 @@ namespace FidoU2f.Tests.Models
 	[TestFixture]
 	public class TestFidoRegisterResponse
 	{
+	    [Test]
+	    public void FromJson()
+	    {
+	        var json =
+	            "{ \"registrationData\":\"BQQcH08Pj414DUayxwcgVU4Z5NXfkFeWz51FT-g5gW7GjPWprecrSECJBj1oNsEjkJynnFkIwZLL4NC6M46GnUopQGJUaobtq9pUKffgVYPJDDLHuAQZLoDz390Z5uwbdFkzYItk3L270bBIM-k0VO1DKF25SGP2XK9NZv-qxWQrV_gwggIcMIIBBqADAgECAgQk26tAMAsGCSqGSIb3DQEBCzAuMSwwKgYDVQQDEyNZdWJpY28gVTJGIFJvb3QgQ0EgU2VyaWFsIDQ1NzIwMDYzMTAgFw0xNDA4MDEwMDAwMDBaGA8yMDUwMDkwNDAwMDAwMFowKzEpMCcGA1UEAwwgWXViaWNvIFUyRiBFRSBTZXJpYWwgMTM1MDMyNzc4ODgwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAQCsJS-NH1HeUHEd46-xcpN7SpHn6oeb-w5r-veDCBwy1vUvWnJanjjv4dR_rV5G436ysKUAXUcsVe5fAnkORo2oxIwEDAOBgorBgEEAYLECgEBBAAwCwYJKoZIhvcNAQELA4IBAQCjY64OmDrzC7rxLIst81pZvxy7ShsPy2jEhFWEkPaHNFhluNsCacNG5VOITCxWB68OonuQrIzx70MfcqwYnbIcgkkUvxeIpVEaM9B7TI40ZHzp9h4VFqmps26QCkAgYfaapG4SxTK5k_lCPvqqTPmjtlS03d7ykkpUj9WZlVEN1Pf02aTVIZOHPHHJuH6GhT6eLadejwxtKDBTdNTv3V4UlvjDOQYQe9aL1jUNqtLDeBHso8pDvJMLc0CX3vadaI2UVQxM-xip4kuGouXYj0mYmaCbzluBDFNsrzkNyL3elg3zMMrKvAUhoYMjlX_-vKWcqQsgsQ0JtSMcWMJ-umeDMEYCIQCKz0k0wQVooa638uF67HNyqNaa2vL5A-LkCDrLV5v74QIhAPjJ8UrQVCymLS1xoLWTw0CPD5U7DuerMqHgsvEnMR3c\",\"challenge\":\"V8D5zRbaeY3Dl_AR5U4g3eZb_HCpZgd17Jeh1LqacL0\",\"version\":\"U2F_V2\",\"appId\":\"http://localhost:3214\",\"clientData\":\"eyJ0eXAiOiJuYXZpZ2F0b3IuaWQuZmluaXNoRW5yb2xsbWVudCIsImNoYWxsZW5nZSI6IlY4RDV6UmJhZVkzRGxfQVI1VTRnM2VaYl9IQ3BaZ2QxN0plaDFMcWFjTDAiLCJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjMyMTQiLCJjaWRfcHVia2V5IjoiIn0\"}";
+
+	        FidoRegisterResponse.FromJson(json);
+	    }
+
 		[Test]
 		public void Validate_Wellformed_NoException()
 		{
@@ -41,12 +50,21 @@ namespace FidoU2f.Tests.Models
 		public void Validate_RegistrationDataMissing_Throws()
 		{
 			var registerResponse = CreateGoodRegisterResponse();
-			registerResponse.RegistrationDataBase64 = "";
+			registerResponse.RegistrationData = null;
 
 			Assert.Throws<InvalidOperationException>(() => registerResponse.Validate());
 		}
 
-		[Test]
+        [Test]
+        public void Validate_ClientDataMissing_Throws()
+        {
+            var registerResponse = CreateGoodRegisterResponse();
+            registerResponse.ClientData = null;
+
+            Assert.Throws<InvalidOperationException>(() => registerResponse.Validate());
+        }
+
+        [Test]
 		public void Validate_ClientDataChallengeMissing_Throws()
 		{
 			var registerResponse = CreateGoodRegisterResponse();
@@ -77,7 +95,7 @@ namespace FidoU2f.Tests.Models
 		{
 			return new FidoRegisterResponse
 			{
-				RegistrationDataBase64 = "registration data",
+				RegistrationData = FidoRegistrationData.FromWebSafeBase64(TestVectors.RegistrationResponseDataBase64),
 				ClientData = new FidoClientData
 				{
 					Challenge = TestVectors.ServerChallengeRegisterBase64,

@@ -43,7 +43,15 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="FidoDeviceRegistrationSerializer.cs" />
+    <Compile Include="Serializers\FidoClientDataConverter.cs" />
+    <Compile Include="Serializers\FidoRegistrationDataConverter.cs" />
+    <Compile Include="Serializers\FidoSignatureDataConverter.cs" />
+    <Compile Include="Serializers\FidoAttestationCertificateConverter.cs" />
+    <Compile Include="Serializers\FidoKeyHandleConverter.cs" />
+    <Compile Include="Serializers\FidoSignatureConverter.cs" />
+    <Compile Include="Serializers\FidoPublicKeyConverter.cs" />
+    <Compile Include="Serializers\FidoFacetIdConverter.cs" />
+    <Compile Include="Serializers\FidoAppIdConverter.cs" />
     <Compile Include="GenerateRandomFidoChallenge.cs" />
     <Compile Include="Models\IValidate.cs" />
     <Compile Include="IFidoUniversalTwoFactor.cs" />
