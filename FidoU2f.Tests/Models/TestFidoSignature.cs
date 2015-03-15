@@ -21,6 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using System.Text;
 using FidoU2f.Models;
 using NUnit.Framework;
@@ -30,7 +31,20 @@ namespace FidoU2f.Tests.Models
 	[TestFixture]
 	public class TestFidoSignature
 	{
-		[Test]
+        [Test]
+        public void Constructor()
+        {
+            var value = new FidoSignature(Encoding.Default.GetBytes("signature"));
+            Assert.AreEqual("signature", Encoding.Default.GetString(value.ToByteArray()));
+        }
+
+        [Test]
+        public void Constructor_Null_ArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new FidoSignature(null));
+        }
+
+        [Test]
 		public void Equals_Null()
 		{
 			Assert.IsFalse(FidoSignature.FromWebSafeBase64("").Equals(null));
@@ -51,5 +65,19 @@ namespace FidoU2f.Tests.Models
 			var value2 = new FidoSignature(Encoding.Default.GetBytes("Signature"));
 			Assert.IsFalse(value1.Equals(value2));
 		}
-	}
+
+        [Test]
+        public void Validate_Good_NoException()
+        {
+            var value = new FidoSignature(WebSafeBase64Converter.FromBase64String(TestVectors.PublicKeyBase64));
+            value.Validate();
+        }
+
+        [Test]
+        public void Validate_BytesEmpty_Throws()
+        {
+            var value = new FidoSignature(new byte[0]);
+            Assert.Throws<InvalidOperationException>(() => value.Validate());
+        }
+    }
 }
