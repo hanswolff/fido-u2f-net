@@ -22,7 +22,6 @@
 // SOFTWARE.
 
 using System;
-using System.IO;
 using System.Text;
 using FidoU2f.Serializers;
 using Newtonsoft.Json;

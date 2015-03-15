@@ -22,28 +22,31 @@
 // SOFTWARE.
 
 using System;
+using Org.BouncyCastle.Crypto.Digests;
 
-namespace FidoU2f.Models
+namespace FidoU2f
 {
-	public class FidoStartedAuthentication
-	{
-		public FidoAppId AppId { get; set; }
-		public string Challenge { get; set; }
-		public FidoKeyHandle KeyHandle { get; set; }
+    static class Helpers
+    {
+        public static byte[] Sha256(string text)
+        {
+            var bytes = new byte[text.Length * sizeof(char)];
+            Buffer.BlockCopy(text.ToCharArray(), 0, bytes, 0, bytes.Length);
 
-	    public FidoStartedAuthentication()
-	    {
-	    }
+            var sha256 = new Sha256Digest();
+            var hash = new byte[sha256.GetDigestSize()];
+            sha256.BlockUpdate(bytes, 0, bytes.Length);
+            sha256.DoFinal(hash, 0);
+            return hash;
+        }
 
-		public FidoStartedAuthentication(FidoAppId appId, string challenge, FidoKeyHandle keyHandle)
-		{
-			if (appId == null) throw new ArgumentNullException("appId");
-			if (challenge == null) throw new ArgumentNullException("challenge");
-			if (keyHandle == null) throw new ArgumentNullException("keyHandle");
+        public static string GetAuthority(Uri uri)
+        {
+            var isDefaultPort =
+                (uri.Scheme == "http" && uri.Port == 80) ||
+                (uri.Scheme == "https" && uri.Port == 443);
 
-			AppId = appId;
-			Challenge = challenge;
-			KeyHandle = keyHandle;
-		}
-	}
+            return uri.Scheme + "://" + uri.DnsSafeHost + (isDefaultPort ? "" : ":" + uri.Port);
+        }
+    }
 }

@@ -28,13 +28,17 @@ namespace FidoU2f.Models
 {
 	public class FidoDeviceRegistration : IEquatable<FidoDeviceRegistration>
 	{
-		public FidoKeyHandle KeyHandle { get; private set; }
+		public FidoKeyHandle KeyHandle { get; set; }
 
-		public FidoPublicKey PublicKey { get; private set; }
+		public FidoPublicKey PublicKey { get; set; }
 
-		public FidoAttestationCertificate Certificate { get; private set; }
+		public FidoAttestationCertificate Certificate { get; set; }
 
 		public uint Counter { get; private set; }
+
+	    public FidoDeviceRegistration()
+	    {
+	    }
 
 		public FidoDeviceRegistration(FidoKeyHandle keyHandle, FidoPublicKey publicKey, FidoAttestationCertificate certificate, uint counter)
 		{

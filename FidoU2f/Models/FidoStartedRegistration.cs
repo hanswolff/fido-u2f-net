@@ -30,6 +30,10 @@ namespace FidoU2f.Models
 		public FidoAppId AppId { get; set; }
 		public string Challenge { get; set; }
 
+	    public FidoStartedRegistration()
+	    {
+	    }
+
 		public FidoStartedRegistration(FidoAppId appId, string challenge)
 		{
 			if (appId == null) throw new ArgumentNullException("appId");

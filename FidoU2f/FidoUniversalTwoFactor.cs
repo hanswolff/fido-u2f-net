@@ -124,8 +124,8 @@ namespace FidoU2f
 
 			var signedBytes = PackBytes(
 				new byte[] { 0 },
-				Sha256(appId.ToString()),
-				Sha256(clientData.RawJsonValue),
+				Helpers.Sha256(appId.ToString()),
+				Helpers.Sha256(clientData.RawJsonValue),
 				registrationData.KeyHandle.ToByteArray(),
 				registrationData.UserPublicKey.ToByteArray());
 
@@ -149,18 +149,6 @@ namespace FidoU2f
 			{
 				throw new InvalidOperationException("Invalid signature");
 			}
-		}
-
-		private byte[] Sha256(string text)
-		{
-			var bytes = new byte[text.Length * sizeof(char)];
-			Buffer.BlockCopy(text.ToCharArray(), 0, bytes, 0, bytes.Length);
-
-			var sha256 = new Sha256Digest();
-			var hash = new byte[sha256.GetDigestSize()];
-			sha256.BlockUpdate(bytes, 0, bytes.Length);
-			sha256.DoFinal(hash, 0);
-			return hash;
 		}
 
 		private static byte[] PackBytes(params byte[][] bytes)
@@ -234,10 +222,10 @@ namespace FidoU2f
 				Array.Reverse(counterBytes);
 
 			var signedBytes = PackBytes(
-				Sha256(appId.ToString()),
+				Helpers.Sha256(appId.ToString()),
 				new [] { signatureData.UserPresence },
 				counterBytes,
-				Sha256(clientData.RawJsonValue));
+				Helpers.Sha256(clientData.RawJsonValue));
 
 			VerifySignature(deviceRegistration, signatureData.Signature, signedBytes);
 

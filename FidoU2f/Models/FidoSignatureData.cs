@@ -37,6 +37,10 @@ namespace FidoU2f.Models
 
 		public FidoSignature Signature { get; set; }
 
+        public FidoSignatureData()
+        {
+        }
+
 		public FidoSignatureData(byte userPresence, uint counter, FidoSignature signature)
 		{
 			UserPresence = userPresence;
@@ -46,20 +50,24 @@ namespace FidoU2f.Models
 
 		public static FidoSignatureData FromWebSafeBase64(string webSafeBase64)
 		{
-			return FromBytes(WebSafeBase64Converter.FromBase64String(webSafeBase64));
+		    return FromBytes(WebSafeBase64Converter.FromBase64String(webSafeBase64));
 		}
 
-		public static FidoSignatureData FromBytes(byte[] rawRegistrationData)
+        public static FidoSignatureData FromBytes(byte[] rawRegistrationData)
 		{
-			using (var mem = new MemoryStream(rawRegistrationData))
+		    if (rawRegistrationData == null) throw new ArgumentNullException("rawRegistrationData");
+
+            using (var mem = new MemoryStream(rawRegistrationData))
 			{
 				return FromStream(mem);
 			}
 		}
 
-		private static FidoSignatureData FromStream(Stream stream)
-		{
-			using (var binaryReader = new BinaryReader(stream))
+        private static FidoSignatureData FromStream(Stream stream)
+        {
+            if (stream == null) throw new ArgumentNullException("stream");
+
+            using (var binaryReader = new BinaryReader(stream))
 			{
 				var userPresence = binaryReader.ReadByte();
 				var counterBytes = binaryReader.ReadBytes(4);
@@ -77,7 +85,7 @@ namespace FidoU2f.Models
 					counter,
 					new FidoSignature(signatureBytes));
 			}
-		}
+        }
 
         public string ToWebSafeBase64()
         {

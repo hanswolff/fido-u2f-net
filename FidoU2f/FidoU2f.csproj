@@ -43,6 +43,7 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Helpers.cs" />
     <Compile Include="Serializers\FidoClientDataConverter.cs" />
     <Compile Include="Serializers\FidoRegistrationDataConverter.cs" />
     <Compile Include="Serializers\FidoSignatureDataConverter.cs" />

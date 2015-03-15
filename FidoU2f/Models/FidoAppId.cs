@@ -68,18 +68,9 @@ namespace FidoU2f.Models
 		public bool Equals(FidoAppId other)
 		{
 			if (other == null) return false;
-			var localAuthority = GetAuthority(_appUri);
-			var otherAuthority = GetAuthority(other._appUri);
+			var localAuthority = Helpers.GetAuthority(_appUri);
+			var otherAuthority = Helpers.GetAuthority(other._appUri);
 			return localAuthority == otherAuthority;
-		}
-
-		private static string GetAuthority(Uri uri)
-		{
-			var isDefaultPort = 
-				(uri.Scheme == "http" && uri.Port == 80) || 
-				(uri.Scheme == "https" && uri.Port == 443);
-
-			return uri.Scheme + "://" + uri.DnsSafeHost + (isDefaultPort ? "" : ":" + uri.Port);
 		}
 
 		private static void ThrowFormatException()
@@ -89,7 +80,7 @@ namespace FidoU2f.Models
 
 		public override string ToString()
 		{
-			return GetAuthority(_appUri);
+			return Helpers.GetAuthority(_appUri);
 		}
 	}
 }
