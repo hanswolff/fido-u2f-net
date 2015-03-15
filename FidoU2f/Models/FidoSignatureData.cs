@@ -29,7 +29,7 @@ using Newtonsoft.Json;
 namespace FidoU2f.Models
 {
     [JsonConverter(typeof(FidoSignatureDataConverter))]
-	public class FidoSignatureData
+	public class FidoSignatureData : IValidate
 	{
 		public byte UserPresence { get; set; }
 
@@ -116,5 +116,13 @@ namespace FidoU2f.Models
 				binaryWriter.Write(Signature.ToByteArray());
 			}
 		}
+
+        public void Validate()
+        {
+            if (Signature == null)
+                throw new InvalidOperationException("Signature must not be null");
+
+            Signature.Validate();
+        }
 	}
 }

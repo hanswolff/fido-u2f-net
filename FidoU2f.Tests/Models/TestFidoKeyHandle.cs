@@ -21,6 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using System.Text;
 using FidoU2f.Models;
 using NUnit.Framework;
@@ -30,7 +31,20 @@ namespace FidoU2f.Tests.Models
 	[TestFixture]
 	public class TestFidoKeyHandle
 	{
-		[Test]
+        [Test]
+	    public void Constructor()
+	    {
+            var value = new FidoKeyHandle(Encoding.Default.GetBytes("keyhandle"));
+            Assert.AreEqual("keyhandle", Encoding.Default.GetString(value.ToByteArray()));
+        }
+
+        [Test]
+        public void Constructor_Null_ArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new FidoKeyHandle(null));
+        }
+
+        [Test]
 		public void Equals_Null()
 		{
 			Assert.IsFalse(FidoKeyHandle.FromWebSafeBase64("").Equals(null));
@@ -51,5 +65,19 @@ namespace FidoU2f.Tests.Models
 			var value2 = new FidoKeyHandle(Encoding.Default.GetBytes("Keyhandle"));
 			Assert.IsFalse(value1.Equals(value2));
 		}
-	}
+
+        [Test]
+        public void Validate_Good_NoException()
+        {
+            var value = new FidoKeyHandle(Encoding.Default.GetBytes("keyhandle"));
+            value.Validate();
+        }
+
+        [Test]
+        public void Validate_BytesEmpty_Throws()
+        {
+            var value = new FidoKeyHandle(new byte[0]);
+            Assert.Throws<InvalidOperationException>(() => value.Validate());
+        }
+    }
 }

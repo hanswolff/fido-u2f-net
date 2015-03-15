@@ -22,6 +22,7 @@
 // SOFTWARE.
 
 using System;
+using System.Linq;
 using FidoU2f.Serializers;
 using Newtonsoft.Json;
 using Org.BouncyCastle.Asn1.Sec;
@@ -31,7 +32,7 @@ using Org.BouncyCastle.Crypto.Parameters;
 namespace FidoU2f.Models
 {
     [JsonConverter(typeof(FidoPublicKeyConverter))]
-	public class FidoPublicKey : IEquatable<FidoPublicKey>
+	public class FidoPublicKey : IEquatable<FidoPublicKey>, IValidate
 	{
 		private readonly byte[] _bytes;
 
@@ -81,5 +82,14 @@ namespace FidoU2f.Models
 		{
 			return ToWebSafeBase64();
 		}
-	}
+
+        public void Validate()
+        {
+            if (_bytes == null || !_bytes.Any())
+                throw new InvalidOperationException("Public key is missing");
+
+            if (PublicKey == null)
+                throw new InvalidOperationException("Invalid public key");
+        }
+    }
 }

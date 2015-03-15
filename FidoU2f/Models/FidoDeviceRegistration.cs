@@ -34,7 +34,7 @@ namespace FidoU2f.Models
 
 		public FidoAttestationCertificate Certificate { get; set; }
 
-		public uint Counter { get; private set; }
+		public uint Counter { get; set; }
 
 	    public FidoDeviceRegistration()
 	    {

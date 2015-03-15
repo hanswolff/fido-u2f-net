@@ -21,6 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using System.Text;
 using FidoU2f.Models;
 using NUnit.Framework;
@@ -30,7 +31,20 @@ namespace FidoU2f.Tests.Models
 	[TestFixture]
 	public class TestFidoPublicKey
 	{
-		[Test]
+        [Test]
+        public void Constructor()
+        {
+            var value = new FidoPublicKey(Encoding.Default.GetBytes("publickey"));
+            Assert.AreEqual("publickey", Encoding.Default.GetString(value.ToByteArray()));
+        }
+
+        [Test]
+        public void Constructor_Null_ArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new FidoPublicKey(null));
+        }
+
+        [Test]
 		public void Equals_Null()
 		{
 			Assert.IsFalse(FidoPublicKey.FromWebSafeBase64("").Equals(null));
@@ -51,5 +65,26 @@ namespace FidoU2f.Tests.Models
 			var value2 = new FidoPublicKey(Encoding.Default.GetBytes("Publickey"));
 			Assert.IsFalse(value1.Equals(value2));
 		}
-	}
+
+        [Test]
+        public void Validate_Good_NoException()
+        {
+            var value = new FidoPublicKey(WebSafeBase64Converter.FromBase64String(TestVectors.PublicKeyBase64));
+            value.Validate();
+        }
+
+        [Test]
+        public void Validate_BytesEmpty_Throws()
+        {
+            var value = new FidoPublicKey(new byte[0]);
+            Assert.Throws<InvalidOperationException>(() => value.Validate());
+        }
+
+        [Test]
+        public void Validate_InvalidBytes_Throws()
+        {
+            var value = new FidoPublicKey(new byte[65]);
+            Assert.Throws<ArgumentException>(() => value.Validate());
+        }
+    }
 }

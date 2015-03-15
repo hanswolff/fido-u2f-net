@@ -22,13 +22,14 @@
 // SOFTWARE.
 
 using System;
+using System.Linq;
 using FidoU2f.Serializers;
 using Newtonsoft.Json;
 
 namespace FidoU2f.Models
 {
     [JsonConverter(typeof(FidoKeyHandleConverter))]
-	public class FidoKeyHandle : IEquatable<FidoKeyHandle>
+	public class FidoKeyHandle : IEquatable<FidoKeyHandle>, IValidate
 	{
 		private readonly byte[] _bytes;
 
@@ -66,5 +67,11 @@ namespace FidoU2f.Models
 		{
 			return ToWebSafeBase64();
 		}
+
+        public void Validate()
+        {
+            if (_bytes == null || !_bytes.Any())
+                throw new InvalidOperationException("KeyHandle is missing");
+        }
 	}
 }

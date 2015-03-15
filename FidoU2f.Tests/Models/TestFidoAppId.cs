@@ -45,7 +45,7 @@ namespace FidoU2f.Tests.Models
 		[TestCase("ftp://localhost")]
 		[TestCase("http://localhost:9999999")]
 		[TestCase("/path")]
-		public void Constructor_IncorrectlyFormattedFacetIds(string appId)
+		public void Constructor_IncorrectlyFormattedAppIds(string appId)
 		{
 			Assert.Throws<FormatException>(() => new FidoAppId(appId));
 		}

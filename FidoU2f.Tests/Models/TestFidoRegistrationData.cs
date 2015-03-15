@@ -21,6 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using FidoU2f.Models;
 using NUnit.Framework;
 
@@ -30,7 +31,7 @@ namespace FidoU2f.Tests.Models
 	public class TestFidoRegistrationData
 	{
 		[Test]
-		public void FromString()
+		public void FromWebSafeBase64()
 		{
 			var registrationData = FidoRegistrationData.FromWebSafeBase64(TestVectors.RegistrationResponseDataBase64);
 
@@ -39,5 +40,53 @@ namespace FidoU2f.Tests.Models
 			Assert.IsNotNullOrEmpty(registrationData.Signature.ToString());
 			Assert.IsNotNullOrEmpty(registrationData.UserPublicKey.ToString());
 		}
+
+        [Test]
+	    public void Validate_Good_NoException()
+        {
+            var value = CreateGoodRegistrationData();
+            value.Validate();
+        }
+
+        [Test]
+        public void Validate_AttestationCertificateMissing_Throws()
+        {
+            var value = CreateGoodRegistrationData();
+            value.AttestationCertificate = null;
+
+            Assert.Throws<InvalidOperationException>(() => value.Validate());
+        }
+
+        [Test]
+        public void Validate_KeyHandleMissing_Throws()
+        {
+            var value = CreateGoodRegistrationData();
+            value.KeyHandle = null;
+
+            Assert.Throws<InvalidOperationException>(() => value.Validate());
+        }
+
+        [Test]
+        public void Validate_SignatureMissing_Throws()
+        {
+            var value = CreateGoodRegistrationData();
+            value.Signature = null;
+
+            Assert.Throws<InvalidOperationException>(() => value.Validate());
+        }
+
+        [Test]
+        public void Validate_UserPublicKeyMissing_Throws()
+        {
+            var value = CreateGoodRegistrationData();
+            value.UserPublicKey = null;
+
+            Assert.Throws<InvalidOperationException>(() => value.Validate());
+        }
+
+        private FidoRegistrationData CreateGoodRegistrationData()
+	    {
+            return FidoRegistrationData.FromWebSafeBase64(TestVectors.RegistrationResponseDataBase64);
+        }
 	}
 }

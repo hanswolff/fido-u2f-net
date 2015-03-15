@@ -347,7 +347,7 @@ namespace FidoU2f.Tests
 		{
 			var cert = FidoAttestationCertificate.FromWebSafeBase64(TestVectors.AttestationCertificate);
 			var keyHandle = FidoKeyHandle.FromWebSafeBase64(TestVectors.KeyHandle);
-			var publicKey = FidoPublicKey.FromWebSafeBase64(TestVectors.PublicKey);
+			var publicKey = FidoPublicKey.FromWebSafeBase64(TestVectors.PublicKeyBase64);
 			return new FidoDeviceRegistration(keyHandle, publicKey, cert, 0);
 		}
 	}

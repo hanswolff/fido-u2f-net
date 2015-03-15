@@ -68,7 +68,7 @@ namespace FidoU2f.Tests
 				StringToByteArray(
 					"2a552dfdb7477ed65fd84133f86196010b2215b57da75d315b7b9e8fe2e3925a6019551bab61d16591659cbaf00b4950f7abfe6660e2e006f76868b772d70c25"));
 
-		public static readonly string PublicKey =
+		public static readonly string PublicKeyBase64 =
 			WebSafeBase64Converter.ToBase64String(
 				StringToByteArray(
 					"04b174bc49c7ca254b70d2e5c207cee9cf174820ebd77ea3c65508c26da51b657c1cc6b952f8621697936482da0a6d3d3826a59095daf6cd7c03e2e60385d2f6d9"));

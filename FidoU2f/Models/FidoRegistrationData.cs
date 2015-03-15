@@ -71,15 +71,19 @@ namespace FidoU2f.Models
 
 		public static FidoRegistrationData FromBytes(byte[] rawRegistrationData)
 		{
-			using (var mem = new MemoryStream(rawRegistrationData))
+		    if (rawRegistrationData == null) throw new ArgumentNullException("rawRegistrationData");
+
+		    using (var mem = new MemoryStream(rawRegistrationData))
 			{
 				return FromStream(mem);
 			}
 		}
 
-		private static FidoRegistrationData FromStream(Stream stream)
+        private static FidoRegistrationData FromStream(Stream stream)
 		{
-			using (var binaryReader = new BinaryReader(stream))
+		    if (stream == null) throw new ArgumentNullException("stream");
+
+		    using (var binaryReader = new BinaryReader(stream))
 			{
 				var reservedByte = binaryReader.ReadByte();
 
@@ -138,7 +142,9 @@ namespace FidoU2f.Models
         }
 
         public void ToStream(Stream stream)
-	    {
+        {
+            if (stream == null) throw new ArgumentNullException("stream");
+
             using (var binaryWriter = new BinaryWriter(stream))
             {
                 binaryWriter.Write(RegistrationReservedByte);
@@ -169,6 +175,11 @@ namespace FidoU2f.Models
 
             if (AttestationCertificate == null)
                 throw new InvalidOperationException("AttestationCertificate is missing in " + typeof(FidoRegistrationData).Name);
-        }
+
+            UserPublicKey.Validate();
+            KeyHandle.Validate();
+            Signature.Validate();
+            AttestationCertificate.Validate();
+	    }
     }
 }

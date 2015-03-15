@@ -21,6 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using Newtonsoft.Json;
 
 namespace FidoU2f.Models
@@ -56,7 +57,16 @@ namespace FidoU2f.Models
 
 		public void Validate()
 		{
-			ClientData.Validate();
+            if (ClientData == null)
+                throw new InvalidOperationException("Client data must not be null");
+            if (KeyHandle == null)
+                throw new InvalidOperationException("Key handle must not be null");
+            if (SignatureData == null)
+                throw new InvalidOperationException("Signature data must not be null");
+
+            ClientData.Validate();
+            KeyHandle.Validate();
+            SignatureData.Validate();
 		}
 	}
 }
