@@ -158,7 +158,7 @@ namespace FidoU2f.Demo.Controllers
                     var counter = u2f.FinishAuthentication(startedAuthentication, model.RawAuthenticationResponse, deviceRegistration, GetTrustedDomains());
 
                     // save the counter somewhere, the device registration of the next authentication should use this updated counter
-                    deviceRegistration.UpdateCounter(counter);
+                    deviceRegistration.Counter = counter;
 
                     return RedirectToAction("LoginSuccess");
                 }

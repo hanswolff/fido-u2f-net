@@ -26,7 +26,7 @@ using Newtonsoft.Json;
 
 namespace FidoU2f.Models
 {
-	public class FidoDeviceRegistration : IEquatable<FidoDeviceRegistration>
+	public class FidoDeviceRegistration : IEquatable<FidoDeviceRegistration>, IValidate
 	{
 		public FidoKeyHandle KeyHandle { get; set; }
 
@@ -52,13 +52,13 @@ namespace FidoU2f.Models
 			Counter = counter;
 		}
 
-		public void UpdateCounter(uint clientCounter)
+		public void UpdateCounter(uint newCounter)
 		{
-			if (clientCounter <= Counter)
+			if (newCounter <= Counter)
 			{
 				throw new InvalidOperationException("Counter value too small!");
 			}
-			Counter = clientCounter;
+			Counter = newCounter;
 		}
 
 		public static FidoDeviceRegistration FromJson(string json)
@@ -82,5 +82,19 @@ namespace FidoU2f.Models
 				KeyHandle.Equals(other.KeyHandle) &&
 				PublicKey.Equals(other.PublicKey);
 		}
+
+	    public void Validate()
+        {
+            if (KeyHandle == null)
+                throw new InvalidOperationException("Key handle must not be null");
+            if (PublicKey == null)
+                throw new InvalidOperationException("Public key must not be null");
+            if (Certificate == null)
+                throw new InvalidOperationException("Certificate data must not be null");
+
+            KeyHandle.Validate();
+            PublicKey.Validate();
+            Certificate.Validate();
+	    }
 	}
 }
